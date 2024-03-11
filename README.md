@@ -23,20 +23,20 @@ comma_param ::= [param (`,` param)*]
 
 structdef ::= `struct` structname `{` comma_param `}`
 
-Definition of an abstract method
+// Definition of an abstract method
 abs_methoddef ::= `method` var (` comma_param `)` `:` type `;`
 
-Definition of a concrete method
+// Definition of a concrete method
 conc_methoddef ::=
   `method` var (` comma_param `)` `:` type `{` stmt* `}`
 
-Definition of a trait (typeclass)
+// Definition of a trait (typeclass)
 traitdef ::= `trait` traitname `{` abs_methoddef* `}`
 
-Definition of an implementation of a typeclass
+// Definition of an implementation of a typeclass
 impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
 
-Definition of a toplevel function
+// Definition of a toplevel function
 funcdef ::= `func` var `(` comma_param `)` `:` type
             `{` stmt* `}`
 
@@ -62,7 +62,7 @@ primary_exp ::= i | var |            // Integers and variables
                 // Creates a new instance of a struct
                 `new` structname `{` struct_actual_params `}`
 
-Accessing a struct field or method
+// Accessing a struct field or method
 dot_exp ::= primary_exp (`.` var)*
 
 call_exp ::= dot_exp (`(` comma_exp `)`)*
