@@ -2,10 +2,11 @@
  A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
 
 ## Concrete Syntax
-var is a variable\
-structname is the name of a struct\
-traitname is the name of a trait (typeclass)\
-i is an integer\
+__var__ is a variable\
+__structname__ is the name of a struct\
+__traitname__ is the name of a trait (typeclass)\
+__i__ is an integer\
+\
 comma_type ::= [type (`,` type)*]\
 type ::=\
  `Int` | `Void` | `Boolean` | Built-in types\
