@@ -18,7 +18,7 @@ type ::=\
   \
 param ::= var \`:\` type\
 \
-comma_param ::= [param (\`,\` param)*]\
+comma_param ::= [param (\`,\` param)\*]\
 \
 structdef ::= \`struct\` structname \`{\` comma_param \`}\`\
 \
@@ -27,13 +27,13 @@ abs_methoddef ::= \`method\` var (\` comma_param \`)\` \`:\` type \`;\`\
 \
 __Definition of a concrete method__\
 conc_methoddef ::=\
-  \`method\` var (\` comma_param \`)\` \`:\` type \`{\` stmt* \`}\`\
+  \`method\` var (\` comma_param \`)\` \`:\` type \`{\` stmt\* \`}\`\
   \
 __Definition of a trait (typeclass)__\
-traitdef ::= \`trait\` traitname \`{\` abs_methoddef* \`}\`\
+traitdef ::= \`trait\` traitname \`{\` abs_methoddef\* \`}\`\
 \
 __Definition of an implementation of a typeclass__\
-impldef ::= \`impl\` traitname \`for\` type \`{\` conc_methoddef* \`}\`\
+impldef ::= \`impl\` traitname \`for\` type \`{\` conc_methoddef\* \`}\`\
 \
 __Definition of a toplevel function__\
 funcdef ::= \`func\` var \`(\` comma_param \`)\` \`:\` type\
@@ -75,5 +75,7 @@ less_than_exp ::= add_exp [\`<\` add_exp]\
 equals_exp ::= less_than_exp [(\`==\` | \`!=\`) less_than_exp]\
 \
 exp ::= equals_exp\
+\
 program_item ::= structdef | traitdef | impldef | funcdef\
-program ::= program_item* stmt* stmt* is the entry point\
+\
+program ::= program_item* stmt\* stmt\* is the entry point\
