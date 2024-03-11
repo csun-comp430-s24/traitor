@@ -28,7 +28,7 @@ abs_methoddef ::= `method` var (` comma_param `)` `:` type `;`
 
 Definition of a concrete method
 conc_methoddef ::=
- `method` var (` comma_param `)` `:` type `{` stmt* `}`
+  `method` var (` comma_param `)` `:` type `{` stmt* `}`
 
 Definition of a trait (typeclass)
 traitdef ::= `trait` traitname `{` abs_methoddef* `}`
@@ -38,29 +38,29 @@ impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
 
 Definition of a toplevel function
 funcdef ::= `func` var `(` comma_param `)` `:` type
- `{` stmt* `}`
+            `{` stmt* `}`
 
-stmt ::= `let` param `=` exp `;` |       // Variable declaration
- var `=` exp `;` |                       // Assignment
- `if` `(` exp `)` stmt [`else` stmt] |   // if
- `while` `(` exp `)` stmt |              // while
- `break` `;` |                           // break
- `println` `(` exp `)` |                 // Printing something
- `{` stmt* `}` |                         // Block
- `return` [exp] `;` |                    // Return
- exp `;`                                 // Expression statements
+stmt ::= `let` param `=` exp `;` |               // Variable declaration
+         var `=` exp `;` |                       // Assignment
+         `if` `(` exp `)` stmt [`else` stmt] |   // if
+         `while` `(` exp `)` stmt |              // while
+         `break` `;` |                           // break
+         `println` `(` exp `)` |                 // Printing something
+         `{` stmt* `}` |                         // Block
+         `return` [exp] `;` |                    // Return
+         exp `;`                                 // Expression statements
 
 struct_actual_param ::= var `:` exp
 
 struct_actual_params ::=
- [struct_actual_param (`,` struct_actual_param)*]
+  [struct_actual_param (`,` struct_actual_param)*]
 
-primary_exp ::= i | var |   // Integers and variables
- `true` | `false` |         // Booleans
- `self` |                   // Instance on which we call a method
- `(` exp `)` |              // Parenthesized expression
- // Creates a new instance of a struct
- `new` structname `{` struct_actual_params `}`
+primary_exp ::= i | var |            // Integers and variables
+                `true` | `false` |   // Booleans
+                `self` |             // Instance on which we call a method
+                `(` exp `)` |        // Parenthesized expression
+                // Creates a new instance of a struct
+                `new` structname `{` struct_actual_params `}`
 
 Accessing a struct field or method
 dot_exp ::= primary_exp (`.` var)*
