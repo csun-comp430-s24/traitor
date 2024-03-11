@@ -2,7 +2,6 @@
  A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
 
 ## Concrete Syntax
-```
 *var* is a variable\
 *structname* is the name of a struct\
 *traitname* is the name of a trait (typeclass)\
@@ -80,4 +79,3 @@ exp ::= equals_exp\
 program_item ::= structdef | traitdef | impldef | funcdef\
 \
 program ::= program_item\* stmt\* __stmt\* is the entry point__
-```
