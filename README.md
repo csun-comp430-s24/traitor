@@ -2,7 +2,7 @@
  A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
 
 ## Concrete Syntax
->var is a variable
+>var is a variable\n
 >structname is the name of a struct
 >traitname is the name of a trait (typeclass)
 >i is an integer
