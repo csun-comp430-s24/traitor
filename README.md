@@ -10,11 +10,11 @@
 comma_type ::= [type (\`,\` type)\*]\
 \
 type ::=\
-&nbsp;\`Int\` | \`Void\` | \`Boolean\` | __Built-in types__\
-&nbsp;\`Self\` | __Refers to our own type in a trait__\
-&nbsp;structname | __Structs are a valid kind of type__\
-&nbsp;\`(\` type \`)\` | __Parenthesized type__\
-&nbsp;\`(\` comma_type \`)\` \`=\` type __Higher-order function__\
+&ensp;\`Int\` | \`Void\` | \`Boolean\` | __Built-in types__\
+&ensp;\`Self\` | __Refers to our own type in a trait__\
+&ensp;structname | __Structs are a valid kind of type__\
+&ensp;\`(\` type \`)\` | __Parenthesized type__\
+&ensp;\`(\` comma_type \`)\` \`=\` type __Higher-order function__\
 \
 param ::= var \`:\` type\
 \
