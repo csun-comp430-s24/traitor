@@ -10,12 +10,12 @@
 comma_type ::= [type (\`,\` type)\*]\
 \
 type ::=\
-  \`Int\` | \`Void\` | \`Boolean\` | __Built-in types__\
-  \`Self\` | __Refers to our own type in a trait__\
-  structname | __Structs are a valid kind of type__\
-  \`(\` type \`)\` | __Parenthesized type__\
-  \`(\` comma_type \`)\` \`=\` type __Higher-order function__\
-  \
+&nbsp;\`Int\` | \`Void\` | \`Boolean\` | __Built-in types__\
+&nbsp;\`Self\` | __Refers to our own type in a trait__\
+&nbsp;structname | __Structs are a valid kind of type__\
+&nbsp;\`(\` type \`)\` | __Parenthesized type__\
+&nbsp;\`(\` comma_type \`)\` \`=\` type __Higher-order function__\
+\
 param ::= var \`:\` type\
 \
 comma_param ::= [param (\`,\` param)\*]\
@@ -27,8 +27,8 @@ abs_methoddef ::= \`method\` var (\` comma_param \`)\` \`:\` type \`;\`\
 \
 __Definition of a concrete method__\
 conc_methoddef ::=\
-  \`method\` var (\` comma_param \`)\` \`:\` type \`{\` stmt\* \`}\`\
-  \
+\`method\` var (\` comma_param \`)\` \`:\` type \`{\` stmt\* \`}\`\
+\
 __Definition of a trait (typeclass)__\
 traitdef ::= \`trait\` traitname \`{\` abs_methoddef\* \`}\`\
 \
@@ -37,30 +37,30 @@ impldef ::= \`impl\` traitname \`for\` type \`{\` conc_methoddef\* \`}\`\
 \
 __Definition of a toplevel function__\
 funcdef ::= \`func\` var \`(\` comma_param \`)\` \`:\` type\
-            \`{\` stmt* \`}\`\
-            \
+\`{\` stmt* \`}\`\
+\
 stmt ::= \`let\` param \`=\` exp \`;\` | __Variable declaration__\
-  var \`=\` exp \`;\` | __Assignment__\
-  \`if\` \`(\` exp \`)\` stmt [\`else\` stmt] | __if__\
-  \`while\` \`(\` exp \`)\` stmt | __while__\
-  \`break\` \`;\` | __break__\
-  \`println\` \`(\` exp \`)\` | __Printing something__\
-  \`{\` stmt* \`}\` | __Block__\
-  \`return\` [exp] \`;\` | __Return__\
-  exp \`;\` __Expression statements__\
- \
+var \`=\` exp \`;\` | __Assignment__\
+\`if\` \`(\` exp \`)\` stmt [\`else\` stmt] | __if__\
+\`while\` \`(\` exp \`)\` stmt | __while__\
+\`break\` \`;\` | __break__\
+\`println\` \`(\` exp \`)\` | __Printing something__\
+\`{\` stmt* \`}\` | __Block__\
+\`return\` [exp] \`;\` | __Return__\
+exp \`;\` __Expression statements__\
+\
 struct_actual_param ::= var \`:\` exp\
 \
 struct_actual_params ::=\
- [struct_actual_param (\`,\` struct_actual_param)*]\
- \
+[struct_actual_param (\`,\` struct_actual_param)*]\
+\
 primary_exp ::= i | var | __Integers and variables__\
- \`true\` | \`false\` | __Booleans__\
- \`self\` | __Instance on which we call a method__\
- \`(\` exp \`)\` | __Parenthesized expression__\
-  __Creates a new instance of a struct__\
- \`new\` structname \`{\` struct_actual_params \`}\`\
- \
+\`true\` | \`false\` | __Booleans__\
+\`self\` | __Instance on which we call a method__\
+\`(\` exp \`)\` | __Parenthesized expression__\
+__Creates a new instance of a struct__\
+\`new\` structname \`{\` struct_actual_params \`}\`\
+\
 __Accessing a struct field or method__\
 dot_exp ::= primary_exp (\`.\` var)\*\
 \
