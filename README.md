@@ -2,19 +2,19 @@
  A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
 
 ## Concrete Syntax
->var is a variable\n
->structname is the name of a struct
->traitname is the name of a trait (typeclass)
->i is an integer
->comma_type ::= [type (`,` type)*]
->type ::=
-> `Int` | `Void` | `Boolean` | Built-in types
-> `Self` | Refers to our own type in a trait
-> structname | Structs are a valid kind of type
-> `(` type `)` | Parenthesized type
-> `(` comma_type `)` `=>` type Higher-order function
->param ::= var `:` type
->comma_param ::= [param (`,` param)*]
+>var is a variable\
+>structname is the name of a struct\
+>traitname is the name of a trait (typeclass)\
+>i is an integer\
+>comma_type ::= [type (`,` type)*]\
+>type ::=\
+> `Int` | `Void` | `Boolean` | Built-in types\
+> `Self` | Refers to our own type in a trait\
+> structname | Structs are a valid kind of type\
+> `(` type `)` | Parenthesized type\
+> `(` comma_type `)` `=>` type Higher-order function\
+>param ::= var `:` type\
+>comma_param ::= [param (`,` param)*]\
 >structdef ::= `struct` structname `{` comma_param `}`
 >
 >Definition of an abstract method
