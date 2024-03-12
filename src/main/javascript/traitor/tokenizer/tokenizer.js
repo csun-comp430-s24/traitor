@@ -57,12 +57,12 @@ const getTable = () => {
     return table;
 }
 
-const main = () => {
+const main = (text) => {
     const table = getTable();
-    const file = "some text, to test. : "; // to be set to contents of code to be parsed
+    const file = text; // to be set to contents of code to be parsed
     return parseFile(table, file);
 }
 
-console.log(main());
+console.log(main("some text, to test. : "));
 
 export default main;
