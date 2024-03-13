@@ -46,12 +46,15 @@ const getTable = () => {
     table[6] = {};
     table[7] = {};
     table[8] = {};
+    table[9] = {};
+    table[10] = {};
     table[69] = {};
 
     table[1]['char'] = 2;
     table[1]['int'] = 3;
     table[1]['.'] = 4;
     table[1]['='] = 5;
+    table[1]['!'] = 9;
     table[2]['char'] = 2;
     table[2]['num'] = 2;
     table[3]['int'] = 3;
@@ -59,6 +62,7 @@ const getTable = () => {
     table[5]['='] = 7;
     table[5]['>'] = 8;
     table[6]['int'] = 6;
+    table[9]['='] = 10;
 
     table[1]['single'] = 69;
 

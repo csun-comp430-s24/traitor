@@ -38,16 +38,16 @@ describe('Tokenizer Test', () => {
         expect(result).toStrictEqual(expected);
     })
     it('Parsing unacceptable data', () => {
-        const data = "$$ \"\" #[]^ @";
+        const data = "!>$ \"\" #[]^ @";
         try { 
             const result = main(data);
             console.log(result);
         } catch(err) {
-            expect(err).toStrictEqual(new TokenizerException('unacceptable token: $'));
+            expect(err).toStrictEqual(new TokenizerException('unacceptable token: !'));
         }
     })
     it('Parsing keywords, integers, and evaluators', () => {
-        const data = "let Int x = 49 * 123 == => <";
+        const data = "let Int x = 49 * 123 == => < !=";
         const result = main(data);
         const expected = [                                                                                                                                                                             
             new Token('keyword', 'let'),
@@ -59,7 +59,8 @@ describe('Tokenizer Test', () => {
             new Token('number', '123'),
             new Token('evaluator', '=='),
             new Token('rightArrow', '=>'),
-            new Token('evaluator', '<')
+            new Token('evaluator', '<'),
+            new Token('notEquals', '!=')
           ];
         expect(result).toStrictEqual(expected);
     })

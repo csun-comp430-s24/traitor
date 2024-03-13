@@ -36,6 +36,9 @@ export const getStateType = (char) => {
     if (char === '>') {
         return '>';
     }
+    if (char === '!') {
+        return '!';
+    }
 
     return 'single';
 }
@@ -48,8 +51,11 @@ export const getTokenType = (data) => {
         }
         if (data.length == 2 && data[0] === '=') {
             if (data[1] === '=')
-                return 'evaluator'
-            return 'rightArrow'
+                return 'evaluator';
+            return 'rightArrow';
+        }
+        if (data.length == 2 && data[0] === '!' && data[1] === '=') {
+            return 'notEquals';
         }
         return isReserved(data);
     }
