@@ -1,3 +1,5 @@
+import TokenizerException from "./tokenizeException";
+
 const types = new Set(
     'Int', 'Void', 'Boolean', 'Self',
 )
@@ -39,7 +41,10 @@ export const getTokenType = (data) => {
         }
         return isReserved(data);
     }
-    if (data === ' ') return 'space';
+    //if (data === ' ') return 'space'; 
+    //I COMMENTED THIS OUT BECAUSE I ADDED CODE TO SKIP WHITE SPACE
+    //I DON'T THINK WE SHOULD HAVE WHITE SPACE TOKENS
+    //LEMME KNOW IF THIS CAUSES ANY BUGS
     if (data === '+' || data === '-' || data === '*' || data === '/') return "op";
     if (data === '==' || data === '<' || data === '>' || data === '<=' || data === '>=')
         return 'evaluator';
@@ -51,7 +56,8 @@ export const getTokenType = (data) => {
     if (data === ':') return 'colon';
     if (data === ';') return 'semicolon';
 
-    console.log("getTokenType Failed")
-    return null;
+    throw new TokenizerException('getTokenType failed: ' + data)
+    // console.log("getTokenType Failed")
+    // return null;
 
 }

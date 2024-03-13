@@ -1,5 +1,6 @@
 import { getStateType, getTokenType } from "./charHelpers.js";
 import Token from "./token.js";
+import TokenizerException from "./tokenizeException.js";
 
 const getToken = (table, file, index, state=1) => {
     // console.log("idx:", index, " fLen:", file.length);
@@ -9,7 +10,7 @@ const getToken = (table, file, index, state=1) => {
     // console.log("state:", state, " interVal:", interVal);
     state = table[state][getStateType(interVal)];
     // console.log("final state:", state);
-    while (state) {
+    while (state) { //BUG? WHEN DOES STATE = 0 CAUSING LOOP TO END? TABLE DOESN'T HAVE 0 STATE
         tokenStr += interVal;
         ++iters;
         
@@ -26,9 +27,17 @@ const parseFile = (table, file, index=0) => {
 
     const tokenList = [];
     while (index < file.length) {
+
+        //first skip white space, we don't want white space tokens
+        while(file[index] === ' ')
+        {
+            index++;
+            if(index === file.length) return tokenList;
+        }
+
         const [tokenStr, iters] = getToken(table, file, index);
         // console.log("tokenStr:", tokenStr);
-        if (!tokenStr) return null; // unaccaptable input
+        if (!tokenStr) throw new TokenizerException('unacceptable token: ' + tokenStr); // unaccaptable input
         index += iters != 0 ? iters : 1;
         const token = new Token(getTokenType(tokenStr), tokenStr);
         tokenList.push(token);
