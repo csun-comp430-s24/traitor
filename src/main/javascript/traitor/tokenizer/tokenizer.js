@@ -63,6 +63,6 @@ const main = (text) => {
     return parseFile(table, file);
 }
 
-console.log(main("some text, to test. : "));
+// console.log(main("some text, to test. : "));
 
 export default main;

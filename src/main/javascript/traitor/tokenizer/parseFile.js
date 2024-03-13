@@ -28,8 +28,8 @@ const parseFile = (table, file, index=0) => {
     const tokenList = [];
     while (index < file.length) {
 
-        //first skip white space, we don't want white space tokens
-        while(file[index] === ' ')
+        // first skip white space, we don't want white space tokens
+        while(file[index] === ' ' || file[index] === '\n')
         {
             index++;
             if(index === file.length) return tokenList;
@@ -37,7 +37,7 @@ const parseFile = (table, file, index=0) => {
 
         const [tokenStr, iters] = getToken(table, file, index);
         // console.log("tokenStr:", tokenStr);
-        if (!tokenStr) throw new TokenizerException('unacceptable token: ' + tokenStr); // unaccaptable input
+        if (getTokenType(tokenStr) === null) throw new TokenizerException('unacceptable token: ' + tokenStr); // unaccaptable input
         index += iters != 0 ? iters : 1;
         const token = new Token(getTokenType(tokenStr), tokenStr);
         tokenList.push(token);

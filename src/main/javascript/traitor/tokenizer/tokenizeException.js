@@ -1,4 +1,4 @@
-class TokenizerException extends Exception {
+class TokenizerException extends Error {
     constructor(message) {
         super(message);
     }
