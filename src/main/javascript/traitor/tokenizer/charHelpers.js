@@ -59,6 +59,9 @@ export const getTokenType = (data) => {
     if (data === ':') return 'colon';
     if (data === ';') return 'semicolon';
 
+    if (data.toLowerCase() != data.toUpperCase()) 
+        return isReserved(data);
+
     // throw new TokenizerException('getTokenType failed: ' + data)
     // console.log("getTokenType Failed")
     return null;

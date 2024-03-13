@@ -47,12 +47,12 @@ describe('Tokenizer Test', () => {
         }
     })
     it('Parsing keywords, integers, and evaluators', () => {
-        const data = "let Int hello = 49 * 123 >";
+        const data = "let Int x = 49 * 123 >";
         const result = main(data);
         const expected = [                                                                                                                                                                             
             new Token('keyword', 'let'),
             new Token('typeKeyword', 'Int'),
-            new Token('variable', 'hello'),
+            new Token('variable', 'x'),
             new Token('equals', '='),
             new Token('number', '49'),
             new Token('op', '*'),
