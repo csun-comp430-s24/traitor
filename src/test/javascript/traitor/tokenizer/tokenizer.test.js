@@ -47,7 +47,7 @@ describe('Tokenizer Test', () => {
         }
     })
     it('Parsing keywords, integers, and evaluators', () => {
-        const data = "let Int x = 49 * 123 ==";
+        const data = "let Int x = 49 * 123 == => <";
         const result = main(data);
         const expected = [                                                                                                                                                                             
             new Token('keyword', 'let'),
@@ -57,8 +57,16 @@ describe('Tokenizer Test', () => {
             new Token('number', '49'),
             new Token('op', '*'),
             new Token('number', '123'),
-            new Token('evaluator', '==')
+            new Token('evaluator', '=='),
+            new Token('rightArrow', '=>'),
+            new Token('evaluator', '<')
           ];
+        expect(result).toStrictEqual(expected);
+    })
+    it('Parsing empty string', () => {
+        const data = "";
+        const result = main(data);
+        const expected = [];
         expect(result).toStrictEqual(expected);
     })
 });

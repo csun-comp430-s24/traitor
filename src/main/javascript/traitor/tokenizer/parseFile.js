@@ -38,7 +38,7 @@ const parseFile = (table, file, index=0) => {
         const [tokenStr, iters] = getToken(table, file, index);
         // console.log("tokenStr:", tokenStr);
         if (getTokenType(tokenStr) === null) throw new TokenizerException('unacceptable token: ' + tokenStr); // unaccaptable input
-        index += iters != 0 ? iters : 1;
+        index += iters; // != 0 ? iters : 1;
         const token = new Token(getTokenType(tokenStr), tokenStr);
         tokenList.push(token);
     }

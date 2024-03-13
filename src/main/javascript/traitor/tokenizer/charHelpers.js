@@ -30,6 +30,12 @@ export const getStateType = (char) => {
     if (char === '.') {
         return '.';
     }
+    if (char === '=') {
+        return '=';
+    }
+    if (char === '>') {
+        return '>';
+    }
 
     return 'single';
 }
@@ -40,6 +46,11 @@ export const getTokenType = (data) => {
         if (!isNaN(data[0] - parseFloat(data[0]))) {
             return 'number';
         }
+        if (data.length == 2 && data[0] === '=') {
+            if (data[1] === '=')
+                return 'evaluator'
+            return 'rightArrow'
+        }
         return isReserved(data);
     }
     //if (data === ' ') return 'space'; 
@@ -47,7 +58,7 @@ export const getTokenType = (data) => {
     //I DON'T THINK WE SHOULD HAVE WHITE SPACE TOKENS
     //LEMME KNOW IF THIS CAUSES ANY BUGS
     if (data === '+' || data === '-' || data === '*' || data === '/') return "op";
-    if (data === '==' || data === '<' || data === '>' || data === '<=' || data === '>=')
+    if (data === '<' || data === '>')
         return 'evaluator';
     if (data === '=') return 'equals';
     if (data === '(') return 'lParen';

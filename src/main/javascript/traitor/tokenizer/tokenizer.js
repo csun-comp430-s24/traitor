@@ -23,10 +23,12 @@ import parseFile from "./parseFile.js";
 
 /*
     States
-    0: [[char, 1], [int, 2]]
+    0: [[char, 1], [int, 2], [=, 3]]
     1: [[char, 1], [num, 1]]
     2: [[int, 2], [., 5]]
+    3: [[=, 6], [>, 7]]
     5: [[int, 5]]
+
 
     ending in state 1 -> either variable or reserved word
     state 2 -> int
@@ -40,16 +42,22 @@ const getTable = () => {
     table[2] = {};
     table[3] = {};
     table[4] = {};
+    table[5] = {};
     table[6] = {};
+    table[7] = {};
+    table[8] = {};
     table[69] = {};
 
     table[1]['char'] = 2;
     table[1]['int'] = 3;
     table[1]['.'] = 4;
+    table[1]['='] = 5;
     table[2]['char'] = 2;
     table[2]['num'] = 2;
     table[3]['int'] = 3;
     table[3]['.'] = 6;
+    table[5]['='] = 7;
+    table[5]['>'] = 8;
     table[6]['int'] = 6;
 
     table[1]['single'] = 69;
