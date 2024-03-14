@@ -10,7 +10,7 @@ const getToken = (table, file, index, state=1) => {
     // console.log("state:", state, " interVal:", interVal);
     state = table[state][getStateType(interVal)];
     // console.log("final state:", state);
-    while (state) { //BUG? WHEN DOES STATE = 0 CAUSING LOOP TO END? TABLE DOESN'T HAVE 0 STATE
+    while (state) { 
         tokenStr += interVal;
         ++iters;
         

@@ -24,16 +24,19 @@ import parseFile from "./parseFile.js";
 /*
     States
     0: [[char, 1], [int, 2], [=, 3]]
-    1: [[char, 1], [num, 1]]
+    1: [[char, 1], [int, 1]]
     2: [[int, 2], [., 5]]
     3: [[=, 6], [>, 7]]
-    5: [[int, 5]]
+    5: [[int, 5]] 
 
 
     ending in state 1 -> either variable or reserved word
     state 2 -> int
     state 69 -> single parsed char
     state 5 -> double
+    state 7 -> ==
+    state 8 -> =>
+    state 10 -> !=
 */
 const getTable = () => {
     const table = {}
@@ -56,7 +59,7 @@ const getTable = () => {
     table[1]['='] = 5;
     table[1]['!'] = 9;
     table[2]['char'] = 2;
-    table[2]['num'] = 2;
+    table[2]['int'] = 2;
     table[3]['int'] = 3;
     table[3]['.'] = 6;
     table[5]['='] = 7;

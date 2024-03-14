@@ -11,17 +11,21 @@ const keywords = new Set(
     'func', 'impl', 'trait', 'method', 'struct']
     )
 
+// Parsing token as identifier token
 const isReserved = (token) => {
-    // console.log(token + " " + keywords.has(token));
+    // If token is a type, parse as typeKeyword token
     if (types.has(token)) {
         return 'typeKeyword';
     }
+    // If token is a reserved word, parse as keyword token
     if (keywords.has(token)) {
         return 'keyword';
     }
+    // Else token is a variable
     return 'variable';
 }
 
+// State machine transitions
 export const getStateType = (char) => {
     if (char.toLowerCase() != char.toUpperCase()) 
         return "char";
@@ -43,29 +47,30 @@ export const getStateType = (char) => {
     return 'single';
 }
 
-
+// Getting type of token
 export const getTokenType = (data) => {
+    // Checking for multiple character tokens
     if (data.length > 1) {
+        // If token is a number parse as int literal token
         if (!isNaN(data[0] - parseFloat(data[0]))) {
             return 'number';
         }
+        // If token is of length 2, can only be doubleEquals, rightArrow, or notEquals token
         if (data.length == 2 && data[0] === '=') {
             if (data[1] === '=')
-                return 'evaluator';
+                return 'doubleEquals';
             return 'rightArrow';
         }
         if (data.length == 2 && data[0] === '!' && data[1] === '=') {
             return 'notEquals';
         }
+        // If token has multiple characters, check if it is reserved
         return isReserved(data);
     }
-    //if (data === ' ') return 'space'; 
-    //I COMMENTED THIS OUT BECAUSE I ADDED CODE TO SKIP WHITE SPACE
-    //I DON'T THINK WE SHOULD HAVE WHITE SPACE TOKENS
-    //LEMME KNOW IF THIS CAUSES ANY BUGS
+    
+    // Checking for single character symbols and parsing as respective tokens
     if (data === '+' || data === '-' || data === '*' || data === '/') return "op";
-    if (data === '<' || data === '>')
-        return 'evaluator';
+    if (data === '<') return 'lessThan';
     if (data === '=') return 'equals';
     if (data === '(') return 'lParen';
     if (data === ')') return 'rParen';
@@ -76,11 +81,16 @@ export const getTokenType = (data) => {
     if (data === ':') return 'colon';
     if (data === ';') return 'semicolon';
 
+    // Checking for single letters and parsing as variable tokens
     if (data.toLowerCase() != data.toUpperCase()) 
         return isReserved(data);
 
-    // throw new TokenizerException('getTokenType failed: ' + data)
-    // console.log("getTokenType Failed")
+    // Checking for single char numbers and parsing as number
+    if (!isNaN(data[0] - parseFloat(data[0]))) {
+        return 'number';
+    }
+
+    // If token could not be found, return null
     return null;
 
 }
