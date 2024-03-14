@@ -24,11 +24,11 @@ comma_param ::= [param (`,` param)*]
 structdef ::= `struct` structname `{` comma_param `}`
 
 // Definition of an abstract method
-abs_methoddef ::= `method` var (` comma_param `)` `:` type `;`
+abs_methoddef ::= `method` var `(` comma_param `)` `:` type `;`
 
 // Definition of a concrete method
 conc_methoddef ::=
-  `method` var (` comma_param `)` `:` type `{` stmt* `}`
+  `method` var `(` comma_param `)` `:` type `{` stmt* `}`
 
 // Definition of a trait (typeclass)
 traitdef ::= `trait` traitname `{` abs_methoddef* `}`
