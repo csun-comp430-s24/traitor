@@ -1,4 +1,4 @@
-import TokenizerException from "./tokenizeException";
+import TokenizerException from "./tokenizeException.js";
 
 const types = new Set(
     ['Int', 'Void', 'Boolean', 'Self']
