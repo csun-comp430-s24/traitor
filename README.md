@@ -81,3 +81,9 @@ program_item ::= structdef | traitdef | impldef | funcdef
 
 program ::= program_item* stmt* stmt* is the entry point
 ```
+
+## How To Run Tests
+```
+Run `npm install jest` in terminal
+Run `npm test` to get test results and code coverage report
+```
