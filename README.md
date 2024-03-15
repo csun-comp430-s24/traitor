@@ -1,6 +1,8 @@
 # Traitor
  A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
 
+ Authors: Nick Sercel, Kobi Sherman, Justin Reyes
+
 ## Concrete Syntax
 ```
 var is a variable
