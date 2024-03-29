@@ -99,24 +99,24 @@ struct IntWrapper {
 
 impl Addable for Int {
  method add(other: Int): Int {
- return self + other;
+  return self + other;
  }
 }
 
 impl Addable for IntWrapper {
  method add(other: IntWrapper): IntWrapper {
- return new IntWrapper { value: self.value + other.value };
+  return new IntWrapper { value: self.value + other.value };
  }
 
 impl Printable for Int {
  method print(): Void {
- println(self);
+  println(self);
  }
 }
 
 impl Printable for IntWrapper {
  method print(): Void {
- println(self.value);
+  println(self.value);
  }
 }
 
