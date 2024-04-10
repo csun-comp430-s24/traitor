@@ -70,11 +70,11 @@ const parseFunctionType = (tokenList, tokenPos) => {
                 if (outParseResult != null) {
                     return [{type:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
                 }
-                else throw Error('Parse Error No Exit On FunctionType');
+                else throw Error('Parse Error No Exit On FuncType');
             }
             else return [null, tokenPos - 3];
         }
-        else return [null, tokenPos - 2];
+        else throw Error('Parse Error No Right Paren On FuncType');
     }
     else return [null, tokenPos];
 }
