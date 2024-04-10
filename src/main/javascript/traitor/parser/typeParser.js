@@ -1,8 +1,7 @@
-import main from "../tokenizer/tokenizer.js";
-import * as util from 'util';
-
 const parseBuiltIn = (tokenList, tokenPos) => {
     const token = tokenList[tokenPos];
+    if (tokenPos >= tokenList.length) return [null, tokenPos];
+
     if (token.type == 'typeKeyword') {
         const actualType = token.data;
         switch (actualType) {
@@ -28,11 +27,11 @@ const parseBuiltIn = (tokenList, tokenPos) => {
 const parseParenType = (tokenList, tokenPos) => {
     var parseResult;
     var token = tokenList[tokenPos];
-    if (token.type == 'lParen') {
+    if (tokenPos < tokenList.length && token.type == 'lParen') {
         [parseResult, tokenPos] = parseType(tokenList, tokenPos+1);
-        if (parseResult != null) {
+        if (tokenPos < tokenList.length && parseResult != null) {
             token = tokenList[tokenPos];
-            if (token.type == 'rParen') {
+            if (tokenPos < tokenList.length && token.type == 'rParen') {
                 return [{type:'ParenType', value:parseResult}, tokenPos+1];
             }
             else throw Error('Parse Error No Right Paren On ParenType');
@@ -46,7 +45,7 @@ const parseCommaType = (tokenList, tokenPos) => {
     const resultList = [];
     var parseResult;
     [parseResult, tokenPos] = parseType(tokenList, tokenPos);
-    while (parseResult != null) {
+    while (tokenPos < tokenList.length && parseResult != null) {
         resultList.push(parseResult);
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
@@ -71,7 +70,7 @@ const parseFunctionType = (tokenList, tokenPos) => {
                 if (outParseResult != null) {
                     return [{type:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
                 }
-                else throw Error('Parse Error No Out From FunctionType');
+                else throw Error('Parse Error No Exit On FunctionType');
             }
             else return [null, tokenPos - 3];
         }
@@ -82,8 +81,6 @@ const parseFunctionType = (tokenList, tokenPos) => {
 
 const parseType = (tokenList, tokenPos) => {
     var parseResult;
-
-    if (tokenList[tokenPos] == null) throw Error('Parse Error');
 
     [parseResult, tokenPos] = parseBuiltIn(tokenList, tokenPos);
     if (parseResult != null) {
@@ -101,12 +98,4 @@ const parseType = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-// TESTING CODE
-const test = "(IntWrapper, Void, Boolean) => () => (Int) => (Boolean) => (Self)";
-const tokens = main(test);
-var parseResult;
-var pos = 0;
-while (pos < tokens.length) {
-    [parseResult, pos] = parseType(tokens, pos);
-    console.log(util.inspect(parseResult, false, null, true))
-}
+export default parseType;
