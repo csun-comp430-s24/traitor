@@ -81,7 +81,7 @@ exp ::= equals_exp
 
 program_item ::= structdef | traitdef | impldef | funcdef
 
-program ::= program_item* stmt* stmt* is the entry point
+program ::= program_item* stmt*      // stmt* is the entry point
 ```
 ## Example Code
 ```
