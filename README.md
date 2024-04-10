@@ -107,6 +107,7 @@ impl Addable for IntWrapper {
  method add(other: IntWrapper): IntWrapper {
   return new IntWrapper { value: self.value + other.value };
  }
+}
 
 impl Printable for Int {
  method print(): Void {
