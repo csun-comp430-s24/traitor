@@ -40,7 +40,7 @@ impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
 
 // Definition of a toplevel function
 funcdef ::= `func` var `(` comma_param `)` `:` type
-            `{` stmt* `}`
+             `{` stmt* `}`
 
 stmt ::= `let` param `=` exp `;` |               // Variable declaration
          var `=` exp `;` |                       // Assignment
