@@ -108,8 +108,40 @@ export const parseMethodDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-const text = "method m1 (var1: Int) : Int;";
+export const parseTraitDef = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+
+    const absMethodList = [];
+    var absMdParseResult;
+    if (tokenPos < tokenList.length && token.type == 'keyword' && token.data == 'trait') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'variable') {
+            const traitName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'lBracket') {
+                [absMdParseResult, tokenPos] = parseMethodDef(tokenList, tokenPos + 1);
+                while (tokenPos < tokenList.length && absMdParseResult != null && absMdParseResult.class == 'AbstractMethodDef') {
+                    absMethodList.push(absMdParseResult);
+                    [absMdParseResult, tokenPos] = parseMethodDef(tokenList, tokenPos);
+                }
+                token = tokenList[tokenPos];
+                if (tokenPos < tokenList.length && token.type == 'rBracket') {
+                    tokenPos++;
+                    return [{class:'TraitDef', traitName:traitName, absMethodList:absMethodList}, tokenPos]
+                }
+                else throw Error('Parse Error Missing `}` on trait definition');
+            }
+            else throw Error('Parse Error Missing `{` on trait definition');
+        }
+        else throw Error('Parse Error Missing trait name on trait definition');
+    }
+    else return [null, tokenPos];
+}
+
+const text = "trait Addable { method print(): Void; method add(a:Int, b:Int): Int; }";
 const tokens = main(text);
-const [result, pos] = parseMethodDef(tokens, 0);
+const [result, pos] = parseTraitDef(tokens, 0);
 console.log(util.inspect(result, false, null, true));
 console.log(pos);
