@@ -240,6 +240,15 @@ const parseLessThanExp = (tokenList, tokenPos) => {
     [addResult, tokenPos] = parseAddExp(tokenList, tokenPos);
     
     if (addResult != null) {
+        var token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'lessThan') {
+            var rightResult;
+            [rightResult, tokenPos] = parseAddExp(tokenList, tokenPos + 1);
+            if (rightResult != null) {
+                addResult = {class:'LessThanExp', left:addResult, right:rightResult};
+            }
+            else throw Error('Parse Error Missing Value on LessThan Expression');
+        }
         return [addResult, tokenPos];
     }
     else return [null, tokenPos];
@@ -250,6 +259,23 @@ const parseEqualsExp = (tokenList, tokenPos) => {
     [lessThanResult, tokenPos] = parseLessThanExp(tokenList, tokenPos);
     
     if (lessThanResult != null) {
+        var token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'doubleEquals') {
+            var rightResult;
+            [rightResult, tokenPos] = parseLessThanExp(tokenList, tokenPos + 1);
+            if (rightResult != null) {
+                lessThanResult = {class:'DoubleEqualsExp', left:lessThanResult, right:rightResult};
+            }
+            else throw Error('Parse Error Missing Value on DoubleEquals Expression');
+        }
+        else if (tokenPos < tokenList.length && token.type == 'notEquals') {
+            var rightResult;
+            [rightResult, tokenPos] = parseLessThanExp(tokenList, tokenPos + 1);
+            if (rightResult != null) {
+                lessThanResult = {class:'NotEqualsExp', left:lessThanResult, right:rightResult};
+            }
+            else throw Error('Parse Error Missing Value on NotEquals Expression');
+        }
         return [lessThanResult, tokenPos];
     }
     else return [null, tokenPos];
@@ -267,10 +293,8 @@ const parseExp = (tokenList, tokenPos) => {
 
 export default parseExp;
 
-/*
-const test = 'new IntWrapper { value1: 7, value2: 9 }';
+const test = '1 * 2 < 2 + 1 == 3 * 2 < 10';
 const tokens = main(test);
 const [parseRes, pos] = parseExp(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);
-*/
