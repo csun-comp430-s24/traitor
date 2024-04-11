@@ -1,5 +1,6 @@
 import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
+import { parseStructDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import * as util from 'util';
 
 describe('Type Parsing Test', () => {
@@ -39,6 +40,7 @@ describe('Type Parsing Test', () => {
           }
         // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(27);
     })
     it('Testing wrong token in type parsing', () => {
         const test = "(IntWrapper, + Void)";
@@ -111,5 +113,74 @@ describe('Type Parsing Test', () => {
         } catch(err) {
             expect(err).toStrictEqual(new Error("Parse Error Missing Comma Between Types"));
         }
+    })
+})
+
+describe('Struct Def Parsing Test', () => {
+    it('Testing struct definition', () => {
+        const test = "struct myStruct {var1: Int, var2: Int}";
+        const tokens = main(test);
+        const [parseResult, pos] = parseStructDef(tokens, 0);
+        const expected = {
+            class: 'StructDef',
+            structName: 'myStruct',
+            params: {
+              class: 'CommaParam',
+              list: [
+                { class: 'Param', varName: 'var1', type: { class: 'IntType' } },
+                { class: 'Param', varName: 'var2', type: { class: 'IntType' } }
+              ]
+            }
+          }
+        expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(11);
+    })
+    it('Testing missing right bracket from struct def', () => {
+        const test = "struct myStruct {var1: Int, var2: Int";
+        const tokens = main(test);
+        try {
+            const [parseResult, pos] = parseStructDef(tokens, 0);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error('Parse Error Missing `}` on struct definition'));
+        }
+    })
+    it('Testing missing comma from struct def params', () => {
+        const test = "struct myStruct {var1: Int var2: Int}";
+        const tokens = main(test);
+        try {
+            const [parseResult, pos] = parseStructDef(tokens, 0);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error('Parse Error Missing Comma Between Params'));
+        }
+    })
+    it('Testing missing left bracket from struct def', () => {
+        const test = "struct myStruct var1: Int, var2: Int}";
+        const tokens = main(test);
+        try {
+            const [parseResult, pos] = parseStructDef(tokens, 0);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error('Parse Error Missing `{` on struct definition'));
+        }
+    })
+    it('Testing missing structname from struct def', () => {
+        const test = "struct {var1: Int, var2: Int}";
+        const tokens = main(test);
+        try {
+            const [parseResult, pos] = parseStructDef(tokens, 0);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error('Parse Error Missing structname on struct definition'));
+        }
+    })
+    it('Testing empty params from struct def', () => {
+        const test = "struct myStruct {}";
+        const tokens = main(test);
+        const [parseResult, pos] = parseStructDef(tokens, 0);
+        const expected = {
+            class: 'StructDef',
+            structName: 'myStruct',
+            params: { class: 'CommaParam', list: [] }
+          }
+        expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(4);
     })
 })

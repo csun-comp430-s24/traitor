@@ -67,6 +67,7 @@ export const parseStructDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+/*
 const text = "var1 : (Int, Boolean) => Self, var2 : Boolean";
 const tokens = main(text);
 const [result, pos] = parseCommaParam(tokens, 0);
@@ -78,3 +79,4 @@ const tokens1 = main(text1);
 const [result1, pos1] = parseStructDef(tokens1, 0);
 console.log(util.inspect(result1, false, null, true));
 console.log(pos1);
+*/
