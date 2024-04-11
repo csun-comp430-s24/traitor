@@ -31,6 +31,7 @@ export const parseCommaParam = (tokenList, tokenPos) => {
         paramList.push(parseResult);
         if (tokenPos >= tokenList.length) break;
         if (tokenList[tokenPos].type == 'rBracket') break;
+        if (tokenList[tokenPos].type == 'rParen') break;
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
             [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
@@ -67,16 +68,48 @@ export const parseStructDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-/*
-const text = "var1 : (Int, Boolean) => Self, var2 : Boolean";
+export const parseMethodDef = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+
+    var commaParams, typeResult;
+    if (tokenPos < tokenList.length && token.type == 'keyword' && token.data == 'method') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'variable') {
+            const methodName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'lParen') {
+                [commaParams, tokenPos] = parseCommaParam(tokenList, tokenPos + 1);
+                token = tokenList[tokenPos];
+                if (tokenPos < tokenList.length && token.type == 'rParen') {
+                    tokenPos++;
+                    token = tokenList[tokenPos];
+                    if (tokenPos < tokenList.length && token.type == 'colon') {
+                        [typeResult, tokenPos] = parseType(tokenList, tokenPos + 1);
+                        if (typeResult != null) {
+                            token = tokenList[tokenPos];
+                            if (tokenPos < tokenList.length && token.type == 'semicolon') {
+                                tokenPos++;
+                                return [{class:'AbstractMethodDef', methodName:methodName, params:commaParams, type:typeResult}, tokenPos]
+                            }
+                            else throw Error('Parse Warning Might Be a Concrete Method Def');    // REPLACE WITH CONCRETE METHOD DEF ONCE STMT PARSING IS DONE
+                        }
+                        else throw Error('Parse Error Missing type on method definition');
+                    }
+                    else throw Error('Parse Error Missing `:` on method definition');
+                }
+                else throw Error('Parse Error Missing `)` on method definition');
+            }
+            else throw Error('Parse Error Missing `(` on method definition');
+        }
+        else throw Error('Parse Error Missing method name on method definition');
+    }
+    else return [null, tokenPos];
+}
+
+const text = "method m1 (var1: Int) : Int;";
 const tokens = main(text);
-const [result, pos] = parseCommaParam(tokens, 0);
+const [result, pos] = parseMethodDef(tokens, 0);
 console.log(util.inspect(result, false, null, true));
 console.log(pos);
-
-const text1 = "struct myStruct {var1: Int, var2: Int}";
-const tokens1 = main(text1);
-const [result1, pos1] = parseStructDef(tokens1, 0);
-console.log(util.inspect(result1, false, null, true));
-console.log(pos1);
-*/
