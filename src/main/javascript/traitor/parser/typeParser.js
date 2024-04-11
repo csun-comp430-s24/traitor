@@ -50,10 +50,12 @@ const parseCommaType = (tokenList, tokenPos) => {
     while (parseResult != null) {
         resultList.push(parseResult);
         if (tokenPos >= tokenList.length) break;
+        if (tokenList[tokenPos].type == 'rParen') break;
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
+            [parseResult, tokenPos] = parseType(tokenList, tokenPos);
         }
-        [parseResult, tokenPos] = parseType(tokenList, tokenPos);
+        else throw Error('Parse Error Missing Comma Between Types');
     }
     return [{class:'CommaType', list:resultList}, tokenPos];
 }

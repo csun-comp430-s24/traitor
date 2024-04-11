@@ -41,7 +41,7 @@ describe('Type Parsing Test', () => {
         expect(parseResult).toStrictEqual(expected);
     })
     it('Testing wrong token in type parsing', () => {
-        const test = "(IntWrapper + Void)";
+        const test = "(IntWrapper, + Void)";
         const tokens = main(test);
         var parseResult;
         var pos = 0;
@@ -98,6 +98,18 @@ describe('Type Parsing Test', () => {
             console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new Error("Parse Error No Exit On FuncType"));
+        }
+    })
+    it('Testing missing comma in comma type', () => {
+        const test = "(Int Void)";
+        const tokens = main(test);
+        var parseResult;
+        var pos = 0;
+        try { 
+            [parseResult, pos] = parseType(tokens, pos);
+            console.log(parseResult);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error("Parse Error Missing Comma Between Types"));
         }
     })
 })
