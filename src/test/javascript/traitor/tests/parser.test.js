@@ -43,6 +43,7 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
+            console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new Error("Parse Error Unknown Type: +"));
         }
@@ -54,19 +55,33 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
+            // console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error No Right Paren On FuncType"));
+            expect(err).toStrictEqual(new Error("Parse Error No Right Paren On ParenType"));
         }
     })
     it('Testing missing right paren in FuncType parsing', () => {
-        const test = "(Int, Void ";
+        const test = "(Void, Int, Boolean";
         const tokens = main(test);
         var parseResult;
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
+            // console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new Error("Parse Error No Right Paren On FuncType"));
+        }
+    })
+    it('Testing missing right arrow in FuncType parsing', () => {
+        const test = "(Int, Void)";
+        const tokens = main(test);
+        var parseResult;
+        var pos = 0;
+        try { 
+            [parseResult, pos] = parseType(tokens, pos);
+            console.log(parseResult);
+        } catch(err) {
+            expect(err).toStrictEqual(new Error("Parse Error Missing Right Arrow On FuncType"));
         }
     })
     it('Testing missing exit in FuncType parsing', () => {
@@ -76,6 +91,7 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
+            console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new Error("Parse Error No Exit On FuncType"));
         }

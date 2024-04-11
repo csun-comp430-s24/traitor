@@ -29,12 +29,14 @@ const parseParenType = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
     if (tokenPos < tokenList.length && token.type == 'lParen') {
         [parseResult, tokenPos] = parseType(tokenList, tokenPos+1);
-        if (tokenPos < tokenList.length && parseResult != null) {
+        if (parseResult != null) {
             token = tokenList[tokenPos];
             if (tokenPos < tokenList.length && token.type == 'rParen') {
                 return [{type:'ParenType', value:parseResult}, tokenPos+1];
             }
-            else throw Error('Parse Error No Right Paren On ParenType');
+            else {
+                throw Error('Parse Error No Right Paren On ParenType');
+            }
         }
         else return [null, tokenPos-1];
     }
@@ -45,8 +47,9 @@ const parseCommaType = (tokenList, tokenPos) => {
     const resultList = [];
     var parseResult;
     [parseResult, tokenPos] = parseType(tokenList, tokenPos);
-    while (tokenPos < tokenList.length && parseResult != null) {
+    while (parseResult != null) {
         resultList.push(parseResult);
+        if (tokenPos >= tokenList.length) break;
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
         }
@@ -72,9 +75,19 @@ const parseFunctionType = (tokenList, tokenPos) => {
                 }
                 else throw Error('Parse Error No Exit On FuncType');
             }
-            else return [null, tokenPos - 3];
+            else {
+                if (inParseResult.list.length == 1) {
+                    return [null, tokenPos - 3];
+                }
+                else throw Error('Parse Error Missing Right Arrow On FuncType');
+            }
         }
-        else throw Error('Parse Error No Right Paren On FuncType');
+        else {
+            if (inParseResult.list.length == 1) {
+                return [null, tokenPos - 2];
+            }
+            else throw Error('Parse Error No Right Paren On FuncType');
+        }
     }
     else return [null, tokenPos];
 }
