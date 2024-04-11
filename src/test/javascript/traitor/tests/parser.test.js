@@ -10,29 +10,29 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         [parseResult, pos] = parseType(tokens, pos);
         const expected = {
-            type: 'FuncType',
+            class: 'FuncType',
             in: {
-              type: 'CommaType',
+              class: 'CommaType',
               list: [
-                { type: 'StructType', name: 'IntWrapper' },
-                { type: 'ParenType', value: { type: 'VoidType' } },
+                { class: 'StructType', name: 'IntWrapper' },
+                { class: 'ParenType', value: { class: 'VoidType' } },
                 {
-                  type: 'FuncType',
-                  in: { type: 'CommaType', list: [] },
-                  out: { type: 'BooleanType' }
+                  class: 'FuncType',
+                  in: { class: 'CommaType', list: [] },
+                  out: { class: 'BooleanType' }
                 }
               ]
             },
             out: {
-              type: 'FuncType',
-              in: { type: 'CommaType', list: [] },
+              class: 'FuncType',
+              in: { class: 'CommaType', list: [] },
               out: {
-                type: 'FuncType',
-                in: { type: 'CommaType', list: [ { type: 'IntType' } ] },
+                class: 'FuncType',
+                in: { class: 'CommaType', list: [ { class: 'IntType' } ] },
                 out: {
-                  type: 'FuncType',
-                  in: { type: 'CommaType', list: [ { type: 'BooleanType' } ] },
-                  out: { type: 'ParenType', value: { type: 'SelfType' } }
+                  class: 'FuncType',
+                  in: { class: 'CommaType', list: [ { class: 'BooleanType' } ] },
+                  out: { class: 'ParenType', value: { class: 'SelfType' } }
                 }
               }
             }
