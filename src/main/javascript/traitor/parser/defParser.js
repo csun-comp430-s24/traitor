@@ -2,7 +2,7 @@ import parseType from './typeParser.js'
 import main from '../tokenizer/tokenizer.js'
 import * as util from 'util';
 
-const parseParam = (tokenList, tokenPos) => {
+export const parseParam = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
     var parseResult;
@@ -23,22 +23,24 @@ const parseParam = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-const parseCommaParam = (tokenList, tokenPos) => {
+export const parseCommaParam = (tokenList, tokenPos) => {
     const paramList = [];
     var parseResult;
     [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
     while (parseResult != null) {
         paramList.push(parseResult);
         if (tokenPos >= tokenList.length) break;
+        if (tokenList[tokenPos].type == 'rBracket') break;
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
+            [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
         }
-        [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
+        else throw Error('Parse Error Missing Comma Between Params');
     }
     return [{class:'CommaParam', list:paramList}, tokenPos]
 }
 
-const parseStructDef = (tokenList, tokenPos) => {
+export const parseStructDef = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
     var commaParams;
