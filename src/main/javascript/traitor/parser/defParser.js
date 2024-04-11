@@ -16,9 +16,9 @@ export const parseParam = (tokenList, tokenPos) => {
             if (parseResult != null) {
                 return [{class:'Param', varName:varName, type:parseResult}, tokenPos];
             }
-            else return [null, tokenPos-2];
+            else throw Error('Parse Error Missing Type On Param');
         }
-        else return [null, tokenPos-1];
+        else throw Error('Parse Error Missing `:` on Param');
     }
     else return [null, tokenPos];
 }
@@ -35,6 +35,7 @@ export const parseCommaParam = (tokenList, tokenPos) => {
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
             [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
+            if (parseResult == null) throw Error('Parse Error Extra Comma Found On Params');
         }
         else throw Error('Parse Error Missing Comma Between Params');
     }
