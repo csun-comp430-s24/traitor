@@ -67,6 +67,8 @@ primary_exp ::= i | var |            // Integers and variables
 // Accessing a struct field or method
 dot_exp ::= primary_exp (`.` var)*
 
+comma_exp ::= [exp (`,` exp)*]
+
 call_exp ::= dot_exp (`(` comma_exp `)`)*
 
 mult_exp ::= call_exp ((`*` | `/`) call_exp)*
