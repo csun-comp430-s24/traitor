@@ -52,10 +52,78 @@ const parsePrimaryParen = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+const parseStructActualParam = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+
+    var expResult;
+    if (tokenPos < tokenList.length && token.type == 'variable') {
+        const varName = token.data;
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'colon') {
+            [expResult, tokenPos] = parseExp(tokenList, tokenPos + 1);
+            if (expResult != null) {
+                return [{class:'StructParam', varName:varName, exp:expResult}, tokenPos];
+            }
+            else throw Error("Parse Error Missing Expression on Struct Param");
+        }
+        else throw Error("Parse Error Missing `:` on Struct Param");
+    }
+    else return [null, tokenPos];
+}
+
+const parseStructActualParams = (tokenList, tokenPos) => {
+    const paramList = [];
+    var paramResult;
+    [paramResult, tokenPos] = parseStructActualParam(tokenList, tokenPos);
+    while (paramResult != null) {
+        paramList.push(paramResult);
+        if (tokenPos >= tokenList.length) break;
+        if (tokenList[tokenPos].type == 'rBracket') break;
+        if (tokenList[tokenPos].type == 'comma') {
+            tokenPos++;
+            [paramResult, tokenPos] = parseStructActualParam(tokenList, tokenPos);
+        }
+        else throw Error('Parse Error Missing Comma Between Params');
+    }
+    return [{class:'StructParams', list:paramList}, tokenPos];
+}
+
+const parseNewStructInstance = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    var structParams;
+
+    if (tokenPos < tokenList.length && token.type == 'keyword' && token.data == 'new') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'variable') {
+            const structName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'lBracket') {
+                [structParams, tokenPos] = parseStructActualParams(tokenList, tokenPos + 1);
+                token = tokenList[tokenPos];
+                if (tokenPos < tokenList.length && token.type == 'rBracket') {
+                    tokenPos++;
+                    return [{class:'NewStructExp', structName:structName, params:structParams}, tokenPos]
+                }
+                else throw Error('Parse Error Missing `}` on Struct Instantiation');
+            }
+            else throw Error('Parse Error Missing `{` on Struct Instantiation');
+        }
+        else throw Error('Parse Error Missing Struct Name on Struct Instantiation');
+    }
+    else return [null, tokenPos]
+}
+
 const parsePrimaryExp = (tokenList, tokenPos) => {
     var parseResult;
     
     [parseResult, tokenPos] = parsePrimaryParen(tokenList, tokenPos);
+    if (parseResult != null) {
+        return [parseResult, tokenPos];
+    }
+    [parseResult, tokenPos] = parseNewStructInstance(tokenList, tokenPos);
     if (parseResult != null) {
         return [parseResult, tokenPos];
     }
@@ -199,8 +267,10 @@ const parseExp = (tokenList, tokenPos) => {
 
 export default parseExp;
 
-const test = '(1 + 2) * 3';
+/*
+const test = 'new IntWrapper { value1: 7, value2: 9 }';
 const tokens = main(test);
 const [parseRes, pos] = parseExp(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);
+*/

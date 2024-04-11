@@ -294,4 +294,32 @@ describe('Exp Parsing Test', () => {
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(14);
     })
+    it('Parsing new struct instantiation', () => {
+        const test = 'new IntWrapper { value1: 7, value2: 9 }';
+        const tokens = main(test);
+        const [parseRes, pos] = parseExp(tokens, 0);
+        const expected = {
+            class: 'NewStructExp',
+            structName: 'IntWrapper',
+            params: {
+              class: 'StructParams',
+              list: [
+                {
+                  class: 'StructParam',
+                  varName: 'value1',
+                  exp: { class: 'IntLitExp', value: 7 }
+                },
+                {
+                  class: 'StructParam',
+                  varName: 'value2',
+                  exp: { class: 'IntLitExp', value: 9 }
+                }
+              ]
+            }
+          }
+        
+        // console.log(util.inspect(parseRes, false, null, true));
+        expect(parseRes).toStrictEqual(expected);
+        expect(pos).toStrictEqual(11);
+    })
 })
