@@ -218,32 +218,44 @@ describe('Def Parsing Test', () => {
 })
 
 describe('Exp Parsing Test', () => {
-    it('Testing arithmetic parsing', () => {
-        const test = "(1 + 2) - 3 * 4";
+    it('Testing expression parsing with int literals', () => {
+        const test = "(1 + 2) - 3 * 4 < 2 != 3 < 4";
         const tokens = main(test);
         const [parseResult, pos] = parseExp(tokens, 0);
         const expected = {
-            class: 'BinOpExp',
-            op: '-',
+          class: 'NotEqualsExp',
+          left: {
+            class: 'LessThanExp',
             left: {
-              class: 'ParenExp',
-              exp: {
+              class: 'BinOpExp',
+              op: '-',
+              left: {
+                class: 'ParenExp',
+                exp: {
+                  class: 'BinOpExp',
+                  op: '+',
+                  left: { class: 'IntLitExp', value: 1 },
+                  right: { class: 'IntLitExp', value: 2 }
+                }
+              },
+              right: {
                 class: 'BinOpExp',
-                op: '+',
-                left: { class: 'IntLitExp', value: 1 },
-                right: { class: 'IntLitExp', value: 2 }
+                op: '*',
+                left: { class: 'IntLitExp', value: 3 },
+                right: { class: 'IntLitExp', value: 4 }
               }
             },
-            right: {
-              class: 'BinOpExp',
-              op: '*',
-              left: { class: 'IntLitExp', value: 3 },
-              right: { class: 'IntLitExp', value: 4 }
-            }
+            right: { class: 'IntLitExp', value: 2 }
+          },
+          right: {
+            class: 'LessThanExp',
+            left: { class: 'IntLitExp', value: 3 },
+            right: { class: 'IntLitExp', value: 4 }
           }
+        }
         // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
-        expect(pos).toStrictEqual(9);
+        expect(pos).toStrictEqual(15);
     })
     it('Testing parsing invalid expression', () => {
         const test = "=>";
@@ -266,7 +278,7 @@ describe('Exp Parsing Test', () => {
         const test = "var1.var2.var3(1, 2, 3)()";
         const tokens = main(test);
         const [parseResult, pos] = parseExp(tokens, 0);
-        console.log(util.inspect(parseResult, false, null, true));
+        // console.log(util.inspect(parseResult, false, null, true));
         const expected = {
             class: 'CallExp',
             call: {
@@ -295,31 +307,87 @@ describe('Exp Parsing Test', () => {
         expect(pos).toStrictEqual(14);
     })
     it('Parsing new struct instantiation', () => {
-        const test = 'new IntWrapper { value1: 7, value2: 9 }';
+        const test = 'new IntWrapper { value1: 7, value2: true, value3: false, value4: self }';
         const tokens = main(test);
         const [parseRes, pos] = parseExp(tokens, 0);
         const expected = {
-            class: 'NewStructExp',
-            structName: 'IntWrapper',
-            params: {
-              class: 'StructParams',
-              list: [
-                {
-                  class: 'StructParam',
-                  varName: 'value1',
-                  exp: { class: 'IntLitExp', value: 7 }
-                },
-                {
-                  class: 'StructParam',
-                  varName: 'value2',
-                  exp: { class: 'IntLitExp', value: 9 }
-                }
-              ]
-            }
+          class: 'NewStructExp',
+          structName: 'IntWrapper',
+          params: {
+            class: 'StructParams',
+            list: [
+              {
+                class: 'StructParam',
+                varName: 'value1',
+                exp: { class: 'IntLitExp', value: 7 }
+              },
+              {
+                class: 'StructParam',
+                varName: 'value2',
+                exp: { class: 'TrueExp' }
+              },
+              {
+                class: 'StructParam',
+                varName: 'value3',
+                exp: { class: 'FalseExp' }
+              },
+              {
+                class: 'StructParam',
+                varName: 'value4',
+                exp: { class: 'SelfExp' }
+              }
+            ]
           }
-        
+        }
         // console.log(util.inspect(parseRes, false, null, true));
         expect(parseRes).toStrictEqual(expected);
-        expect(pos).toStrictEqual(11);
+        expect(pos).toStrictEqual(19);
+    })
+    it('Testing missing right paren on paren exp', () => {
+      const test = '((1 + 2) * 3';
+      const tokens = main(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new Error('Parse Error Missing `)` In Parenthesized Expression'));
+      }
+    })
+    it('Testing missing expression on paren exp', () => {
+      const test = '(1 + 2) * ()';
+      const tokens = main(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new Error('Parse Error Missing Expression In Parenthesized Expression'));
+      }
+    })
+    it('Parsing new struct instantiation no params', () => {
+      const test = 'new IntWrapper {}';
+      const tokens = main(test);
+      const [parseRes, pos] = parseExp(tokens, 0);
+      const expected = {
+        class: 'NewStructExp',
+        structName: 'IntWrapper',
+        params: {
+          class: 'StructParams',
+          list: []
+        }
+      }
+      // console.log(util.inspect(parseRes, false, null, true));
+      expect(parseRes).toStrictEqual(expected);
+      expect(pos).toStrictEqual(4);
+    })
+    it('Parsing double equals exp', () => {
+      const test = '2 == 2';
+      const tokens = main(test);
+      const [parseRes, pos] = parseExp(tokens, 0);
+      const expected = {
+        class: 'DoubleEqualsExp',
+        left: { class: 'IntLitExp', value: 2 },
+        right: { class: 'IntLitExp', value: 2 }
+      }
+      // console.log(util.inspect(parseRes, false, null, true));
+      expect(parseRes).toStrictEqual(expected);
+      expect(pos).toStrictEqual(3);
     })
 })

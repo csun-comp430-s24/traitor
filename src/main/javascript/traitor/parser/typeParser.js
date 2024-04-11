@@ -29,16 +29,15 @@ const parseParenType = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
     if (tokenPos < tokenList.length && token.type == 'lParen') {
         [parseResult, tokenPos] = parseType(tokenList, tokenPos+1);
-        if (parseResult != null) {
-            token = tokenList[tokenPos];
-            if (tokenPos < tokenList.length && token.type == 'rParen') {
-                return [{class:'ParenType', value:parseResult}, tokenPos+1];
-            }
-            else {
-                throw Error('Parse Error No Right Paren On ParenType');
-            }
+
+        // No need to check if type object exists in paren because parseFunc only passes to parseParen when there is exactly one type object in the paren
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'rParen') {
+            return [{class:'ParenType', value:parseResult}, tokenPos+1];
         }
-        else return [null, tokenPos-1];
+        else {
+            throw Error('Parse Error No Right Paren On ParenType');
+        }    
     }
     else return [null, tokenPos];
 }

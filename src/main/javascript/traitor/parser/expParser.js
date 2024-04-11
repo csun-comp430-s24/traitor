@@ -21,10 +21,7 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
             else if (token.data == 'self') {
                 return [{class:'SelfExp'}, tokenPos + 1];
             }
-            else break;
         case 'rParen':
-            return [null, tokenPos];
-        case 'rBracket':
             return [null, tokenPos];
         default:
             break;
@@ -292,9 +289,3 @@ const parseExp = (tokenList, tokenPos) => {
 }
 
 export default parseExp;
-
-const test = '1 * 2 < 2 + 1 == 3 * 2 < 10';
-const tokens = main(test);
-const [parseRes, pos] = parseExp(tokens, 0);
-console.log(util.inspect(parseRes, false, null, true));
-console.log(pos);
