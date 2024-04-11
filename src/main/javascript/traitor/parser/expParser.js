@@ -98,10 +98,30 @@ const parseMultExp = (tokenList, tokenPos) => {
             var rightResult;
             [rightResult, tokenPos] = parseCallExp(tokenList, tokenPos + 1);
             if (rightResult != null) {
-                leftResult = {class:'BinExp', op:token.data, left:leftResult, right:rightResult};
+                leftResult = {class:'BinOpExp', op:token.data, left:leftResult, right:rightResult};
                 token = tokenList[tokenPos];
             }
-            else throw Error('Parse Error Missing variable on Dot Expression');
+            else throw Error('Parse Error Missing Value on BinOp Expression');
+        }
+        return [leftResult, tokenPos];
+    }
+    else return [null, tokenPos];
+}
+
+const parseAddExp = (tokenList, tokenPos) => {
+    var leftResult;
+    [leftResult, tokenPos] = parseMultExp(tokenList, tokenPos);
+
+    if (leftResult != null) {
+        var token = tokenList[tokenPos];
+        while (tokenPos < tokenList.length && token.type == 'op' && (token.data == '+' || token.data == '-')) {
+            var rightResult;
+            [rightResult, tokenPos] = parseMultExp(tokenList, tokenPos + 1);
+            if (rightResult != null) {
+                leftResult = {class:'BinOpExp', op:token.data, left:leftResult, right:rightResult};
+                token = tokenList[tokenPos];
+            }
+            else throw Error('Parse Error Missing Value on BinOp Expression');
         }
         return [leftResult, tokenPos];
     }
@@ -112,8 +132,8 @@ const parseExp = (tokenList, tokenPos) => {
     return [null, tokenPos];
 }
 
-const test = 'hello.world * 2 / 4';
+const test = '1 + 2 * 3 - 4';
 const tokens = main(test);
-const [parseRes, pos] = parseMultExp(tokens, 0);
+const [parseRes, pos] = parseAddExp(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);
