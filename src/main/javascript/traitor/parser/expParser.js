@@ -22,16 +22,43 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
                 return [{class:'SelfExp'}, tokenPos + 1];
             }
             else break;
+        case 'rParen':
+            return [null, tokenPos];
+        case 'rBracket':
+            return [null, tokenPos];
         default:
             break;
     }
 
-    throw Error('Parse Error Expected Exp, Received: ' + token.data);
+    throw Error('Parse Error Expected Expression, Received: ' + token.data);
+}
+
+const parsePrimaryParen = (tokenList, tokenPos) => {
+    var expResult;
+
+    var token = tokenList[tokenPos];
+    if (tokenPos < tokenList.length && token.type == 'lParen') {
+        [expResult, tokenPos] = parseExp(tokenList, tokenPos + 1);
+        if (expResult != null) {
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'rParen') {
+                tokenPos++;
+                return [{class:'ParenExp', exp:expResult}, tokenPos];
+            }
+            else throw Error('Parse Error Missing `)` In Parenthesized Expression');
+        }
+        else throw Error('Parse Error Missing Expression In Parenthesized Expression');
+    }
+    else return [null, tokenPos];
 }
 
 const parsePrimaryExp = (tokenList, tokenPos) => {
     var parseResult;
-
+    
+    [parseResult, tokenPos] = parsePrimaryParen(tokenList, tokenPos);
+    if (parseResult != null) {
+        return [parseResult, tokenPos];
+    }
     [parseResult, tokenPos] = parsePrimarySingle(tokenList, tokenPos);
     if (parseResult != null) {
         return [parseResult, tokenPos];
@@ -83,6 +110,18 @@ const parseCallExp = (tokenList, tokenPos) => {
     [dotResult, tokenPos] = parseDotExp(tokenList, tokenPos);
     
     if (dotResult != null) {
+        var token = tokenList[tokenPos];
+        while (tokenPos < tokenList.length && token.type == 'lParen') {
+            var commaResult;
+            [commaResult, tokenPos] = parseCommaExp(tokenList, tokenPos + 1);
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'rParen') {
+                dotResult = {class:'CallExp', call:dotResult, params:commaResult};
+                tokenPos++;
+                token = tokenList[tokenPos];
+            }
+            else throw Error('Parse Error Missing `)` on Call Expression');
+        }
         return [dotResult, tokenPos];
     }
     else return [null, tokenPos];
@@ -128,12 +167,40 @@ const parseAddExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-const parseExp = (tokenList, tokenPos) => {
-    return [null, tokenPos];
+const parseLessThanExp = (tokenList, tokenPos) => {
+    var addResult;
+    [addResult, tokenPos] = parseAddExp(tokenList, tokenPos);
+    
+    if (addResult != null) {
+        return [addResult, tokenPos];
+    }
+    else return [null, tokenPos];
 }
 
-const test = '1 + 2 * 3 - 4';
+const parseEqualsExp = (tokenList, tokenPos) => {
+    var lessThanResult;
+    [lessThanResult, tokenPos] = parseLessThanExp(tokenList, tokenPos);
+    
+    if (lessThanResult != null) {
+        return [lessThanResult, tokenPos];
+    }
+    else return [null, tokenPos];
+}
+
+const parseExp = (tokenList, tokenPos) => {
+    var equalsResult;
+    [equalsResult, tokenPos] = parseEqualsExp(tokenList, tokenPos);
+    
+    if (equalsResult != null) {
+        return [equalsResult, tokenPos];
+    }
+    else return [null, tokenPos];
+}
+
+export default parseExp;
+
+const test = '(1 + 2) * 3';
 const tokens = main(test);
-const [parseRes, pos] = parseAddExp(tokens, 0);
+const [parseRes, pos] = parseExp(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);

@@ -32,7 +32,7 @@ describe('Tokenizer Test', () => {
             new Token('lBracket', '{'), new Token('keyword', 'method'), new Token('variable', 'add'), new Token('lParen', '('),
             new Token('variable', 'other'), new Token('colon', ':'), new Token('typeKeyword', 'Int'), new Token('rParen', ')'),
             new Token('colon', ':'), new Token('typeKeyword', 'Int'), new Token('lBracket', '{'), new Token('keyword', 'return'),
-            new Token('variable', 'self'), new Token('op', '+'), new Token('variable', 'other'), new Token('semicolon', ';'),
+            new Token('keyword', 'self'), new Token('op', '+'), new Token('variable', 'other'), new Token('semicolon', ';'),
             new Token('rBracket', '}'), new Token('rBracket', '}')
           ];
         expect(result).toStrictEqual(expected);

@@ -1,6 +1,7 @@
 import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
 import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
+import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
 import * as util from 'util';
 
 describe('Type Parsing Test', () => {
@@ -213,5 +214,84 @@ describe('Def Parsing Test', () => {
           }
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(25);
+    })
+})
+
+describe('Exp Parsing Test', () => {
+    it('Testing arithmetic parsing', () => {
+        const test = "(1 + 2) - 3 * 4";
+        const tokens = main(test);
+        const [parseResult, pos] = parseExp(tokens, 0);
+        const expected = {
+            class: 'BinOpExp',
+            op: '-',
+            left: {
+              class: 'ParenExp',
+              exp: {
+                class: 'BinOpExp',
+                op: '+',
+                left: { class: 'IntLitExp', value: 1 },
+                right: { class: 'IntLitExp', value: 2 }
+              }
+            },
+            right: {
+              class: 'BinOpExp',
+              op: '*',
+              left: { class: 'IntLitExp', value: 3 },
+              right: { class: 'IntLitExp', value: 4 }
+            }
+          }
+        // console.log(util.inspect(parseResult, false, null, true));
+        expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(9);
+    })
+    it('Testing parsing invalid expression', () => {
+        const test = "=>";
+        const tokens = main(test);
+        try {
+            const [parseResult, pos] = parseExp(tokens, 0);
+        }
+        catch (err) {
+            expect(err).toStrictEqual(new Error('Parse Error Expected Expression, Received: =>'))
+        }
+    })
+    it('Testing parsing empty expression', () => {
+        const test = "";
+        const tokens = main(test);
+        const [parseResult, pos] = parseExp(tokens, 0);
+        expect(parseResult).toStrictEqual(null);
+        expect(pos).toStrictEqual(0);
+    })
+    it('Testing parsing chained dot expressions and chained call expressions', () => {
+        const test = "var1.var2.var3(1, 2, 3)()";
+        const tokens = main(test);
+        const [parseResult, pos] = parseExp(tokens, 0);
+        console.log(util.inspect(parseResult, false, null, true));
+        const expected = {
+            class: 'CallExp',
+            call: {
+              class: 'CallExp',
+              call: {
+                class: 'DotExp',
+                primary: {
+                  class: 'DotExp',
+                  primary: { class: 'VarExp', name: 'var1' },
+                  varName: 'var2'
+                },
+                varName: 'var3'
+              },
+              params: {
+                class: 'CommaExp',
+                list: [
+                  { class: 'IntLitExp', value: 1 },
+                  { class: 'IntLitExp', value: 2 },
+                  { class: 'IntLitExp', value: 3 }
+                ]
+              }
+            },
+            params: { class: 'CommaExp', list: [] }
+          }
+        expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(14);
     })
 })
