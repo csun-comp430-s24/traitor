@@ -94,17 +94,17 @@ export const parseMethodDef = (tokenList, tokenPos) => {
                                 tokenPos++;
                                 return [{class:'AbstractMethodDef', methodName:methodName, params:commaParams, type:typeResult}, tokenPos]
                             }
-                            else throw Error('Parse Warning Might Be a Concrete Method Def');    // REPLACE WITH CONCRETE METHOD DEF ONCE STMT PARSING IS DONE
+                            else throw Error('Parse Warning Missing `;` on abstract method definition');
                         }
-                        else throw Error('Parse Error Missing type on method definition');
+                        else throw Error('Parse Error Missing type on abstract method definition');
                     }
-                    else throw Error('Parse Error Missing `:` on method definition');
+                    else throw Error('Parse Error Missing `:` on abstract method definition');
                 }
-                else throw Error('Parse Error Missing `)` on method definition');
+                else throw Error('Parse Error Missing `)` on abstract method definition');
             }
-            else throw Error('Parse Error Missing `(` on method definition');
+            else throw Error('Parse Error Missing `(` on abstract method definition');
         }
-        else throw Error('Parse Error Missing method name on method definition');
+        else throw Error('Parse Error Missing method name on abstract method definition');
     }
     else return [null, tokenPos];
 }
