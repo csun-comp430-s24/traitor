@@ -6,17 +6,17 @@ const parseBuiltIn = (tokenList, tokenPos) => {
         const actualType = token.data;
         switch (actualType) {
             case 'Int':
-                return [{type:'IntType'}, tokenPos+1];
+                return [{class:'IntType'}, tokenPos+1];
             case 'Void':
-                return [{type:'VoidType'}, tokenPos+1];
+                return [{class:'VoidType'}, tokenPos+1];
             case 'Boolean':
-                return [{type:'BooleanType'}, tokenPos+1];
+                return [{class:'BooleanType'}, tokenPos+1];
             case 'Self':
-                return [{type:'SelfType'}, tokenPos+1];
+                return [{class:'SelfType'}, tokenPos+1];
         }
     }
     else if (token.type == 'variable') {
-        return [{type:'StructType', name:token.data}, tokenPos+1];
+        return [{class:'StructType', name:token.data}, tokenPos+1];
     }
     else if (token.type == 'lParen' || token.type == 'rParen' || token.type == 'rightArrow' || token.type == 'comma') {
         return [null, tokenPos];
@@ -32,7 +32,7 @@ const parseParenType = (tokenList, tokenPos) => {
         if (parseResult != null) {
             token = tokenList[tokenPos];
             if (tokenPos < tokenList.length && token.type == 'rParen') {
-                return [{type:'ParenType', value:parseResult}, tokenPos+1];
+                return [{class:'ParenType', value:parseResult}, tokenPos+1];
             }
             else {
                 throw Error('Parse Error No Right Paren On ParenType');
@@ -55,7 +55,7 @@ const parseCommaType = (tokenList, tokenPos) => {
         }
         [parseResult, tokenPos] = parseType(tokenList, tokenPos);
     }
-    return [{type:'CommaType', list:resultList}, tokenPos];
+    return [{class:'CommaType', list:resultList}, tokenPos];
 }
 
 const parseFunctionType = (tokenList, tokenPos) => {
@@ -71,7 +71,7 @@ const parseFunctionType = (tokenList, tokenPos) => {
             if (tokenPos < tokenList.length && token.type == 'rightArrow') {
                 [outParseResult, tokenPos] = parseType(tokenList, tokenPos+1);
                 if (outParseResult != null) {
-                    return [{type:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
+                    return [{class:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
                 }
                 else throw Error('Parse Error No Exit On FuncType');
             }
