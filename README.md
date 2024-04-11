@@ -4,7 +4,7 @@
 >Programmers: Nick Sercel, Kobi Sherman, Justin Reyes
 
 ## Concrete Syntax
-```diff
+```
 var is a variable
 structname is the name of a struct
 traitname is the name of a trait (typeclass)
@@ -29,28 +29,28 @@ structdef ::= `struct` structname `{` comma_param `}`
 abs_methoddef ::= `method` var `(` comma_param `)` `:` type `;`
 
 // Definition of a concrete method
-! conc_methoddef ::=
-!   `method` var `(` comma_param `)` `:` type `{` stmt* `}`
+conc_methoddef ::=
+  `method` var `(` comma_param `)` `:` type `{` stmt* `}`
 
 // Definition of a trait (typeclass)
-! traitdef ::= `trait` traitname `{` abs_methoddef* `}`
+traitdef ::= `trait` traitname `{` abs_methoddef* `}`
 
 // Definition of an implementation of a typeclass
-! impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
+impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
 
 // Definition of a toplevel function
-! funcdef ::= `func` var `(` comma_param `)` `:` type
-!             `{` stmt* `}`
+funcdef ::= `func` var `(` comma_param `)` `:` type
+             `{` stmt* `}`
 
-! stmt ::= `let` param `=` exp `;` |               // Variable declaration
-!          var `=` exp `;` |                       // Assignment
-!          `if` `(` exp `)` stmt [`else` stmt] |   // if
-!          `while` `(` exp `)` stmt |              // while
-!          `break` `;` |                           // break
-!          `println` `(` exp `)` |                 // Printing something
-!          `{` stmt* `}` |                         // Block
-!          `return` [exp] `;` |                    // Return
-!          exp `;`                                 // Expression statements
+stmt ::= `let` param `=` exp `;` |               // Variable declaration
+         var `=` exp `;` |                       // Assignment
+         `if` `(` exp `)` stmt [`else` stmt] |   // if
+         `while` `(` exp `)` stmt |              // while
+         `break` `;` |                           // break
+         `println` `(` exp `)` |                 // Printing something
+         `{` stmt* `}` |                         // Block
+         `return` [exp] `;` |                    // Return
+         exp `;`                                 // Expression statements
 
 struct_actual_param ::= var `:` exp
 
@@ -81,9 +81,9 @@ equals_exp ::= less_than_exp [(`==` | `!=`) less_than_exp]
 
 exp ::= equals_exp
 
-! program_item ::= structdef | traitdef | impldef | funcdef
+program_item ::= structdef | traitdef | impldef | funcdef
 
-! program ::= program_item* stmt*      // stmt* is the entry point
+program ::= program_item* stmt*      // stmt* is the entry point
 ```
 ## Example Code
 ```
