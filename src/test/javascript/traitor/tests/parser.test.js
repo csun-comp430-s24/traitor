@@ -4,7 +4,7 @@ import * as util from 'util';
 
 describe('Type Parsing Test', () => {
     it('Testing super high order func', () => {
-        const test = "(IntWrapper, Void, Boolean) => () => (Int) => (Boolean) => (Self)";
+        const test = "(IntWrapper, (Void), () => Boolean) => () => (Int) => (Boolean) => (Self)";
         const tokens = main(test);
         var parseResult;
         var pos = 0;
@@ -15,8 +15,12 @@ describe('Type Parsing Test', () => {
               type: 'CommaType',
               list: [
                 { type: 'StructType', name: 'IntWrapper' },
-                { type: 'VoidType' },
-                { type: 'BooleanType' }
+                { type: 'ParenType', value: { type: 'VoidType' } },
+                {
+                  type: 'FuncType',
+                  in: { type: 'CommaType', list: [] },
+                  out: { type: 'BooleanType' }
+                }
               ]
             },
             out: {
@@ -32,7 +36,7 @@ describe('Type Parsing Test', () => {
                 }
               }
             }
-        }
+          }
         // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
     })
