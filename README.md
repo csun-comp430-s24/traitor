@@ -4,8 +4,8 @@
 >Programmers: Nick Sercel, Kobi Sherman, Justin Reyes
 
 ## Concrete Syntax
-```
-var is a variable
+```diff
++ var is a variable
 structname is the name of a struct
 traitname is the name of a trait (typeclass)
 i is an integer
