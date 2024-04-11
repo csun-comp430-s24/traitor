@@ -140,9 +140,3 @@ export const parseTraitDef = (tokenList, tokenPos) => {
     }
     else return [null, tokenPos];
 }
-
-const text = "trait Addable { method print(): Void; method add(a:Int, b:Int): Int; }";
-const tokens = main(text);
-const [result, pos] = parseTraitDef(tokens, 0);
-console.log(util.inspect(result, false, null, true));
-console.log(pos);

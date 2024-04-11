@@ -61,10 +61,10 @@ const getTable = () => {
     table[2]['char'] = 2;
     table[2]['int'] = 2;
     table[3]['int'] = 3;
-    table[3]['.'] = 6;
+    // table[3]['.'] = 6;
     table[5]['='] = 7;
     table[5]['>'] = 8;
-    table[6]['int'] = 6;
+    // table[6]['int'] = 6;
     table[9]['='] = 10;
 
     table[1]['single'] = 69;

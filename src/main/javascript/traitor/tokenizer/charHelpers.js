@@ -7,7 +7,7 @@ const types = new Set(
 const keywords = new Set(
     ['let', 'if', 'while', 'else', 'break', 'println',
     'return', 'new', 'for',
-    'true', 'false',
+    'true', 'false', 'self',
     'func', 'impl', 'trait', 'method', 'struct']
     )
 

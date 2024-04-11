@@ -1,6 +1,6 @@
 import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
-import { parseStructDef } from "../../../../main/javascript/traitor/parser/defParser.js";
+import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import * as util from 'util';
 
 describe('Type Parsing Test', () => {
@@ -116,7 +116,7 @@ describe('Type Parsing Test', () => {
     })
 })
 
-describe('Struct Def Parsing Test', () => {
+describe('Def Parsing Test', () => {
     it('Testing struct definition', () => {
         const test = "struct myStruct {var1: Int, var2: Int}";
         const tokens = main(test);
@@ -182,5 +182,36 @@ describe('Struct Def Parsing Test', () => {
           }
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(4);
+    })
+    it('Testing trait definition', () => {
+        const test = "trait Addable { method print(): Void; method add(a:Int, b:Int): Int; }";
+        const tokens = main(test);
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+        const expected = {
+            class: 'TraitDef',
+            traitName: 'Addable',
+            absMethodList: [
+              {
+                class: 'AbstractMethodDef',
+                methodName: 'print',
+                params: { class: 'CommaParam', list: [] },
+                type: { class: 'VoidType' }
+              },
+              {
+                class: 'AbstractMethodDef',
+                methodName: 'add',
+                params: {
+                  class: 'CommaParam',
+                  list: [
+                    { class: 'Param', varName: 'a', type: { class: 'IntType' } },
+                    { class: 'Param', varName: 'b', type: { class: 'IntType' } }
+                  ]
+                },
+                type: { class: 'IntType' }
+              }
+            ]
+          }
+        expect(parseResult).toStrictEqual(expected);
+        expect(pos).toStrictEqual(25);
     })
 })
