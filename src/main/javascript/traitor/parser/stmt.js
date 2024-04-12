@@ -17,6 +17,24 @@ export const parseStmt = (tokenList, tokenPos) => {
         [parseResult, tokenPos] = parseIfStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
+        [parseResult, tokenPos] = parseWhileStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
+        [parseResult, tokenPos] = parseBreakStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
+        [parseResult, tokenPos] = printlnStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
+        [parseResult, tokenPos] = blockStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
+        [parseResult, tokenPos] = returnStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
+        [parseResult, tokenPos] = expStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
         throw Error('Not a valid statement');
     }
      
@@ -34,30 +52,29 @@ export const parseLetStmt = (tokenList, tokenPos) => {
         {
             var param;
             [param, tokenPos] = parseParam(tokenList, tokenPos);
-            if(param === null) throw Error('Missing parameter after let keyword');
-
-            if(tokenPos < tokenList.length)
+            if(param !== null && tokenPos < tokenList.length) 
             {
                 token = tokenList[tokenPos];
-                if(token.type !== 'equals') throw Error('Missing "=" in let statement');
-
                 tokenPos++;
-                if(tokenPos < tokenList.length)
+                if(token.type === 'equals' && tokenPos < tokenList.length)
                 {
                     var exp;
                     [exp, tokenPos] = parseExp(tokenList, tokenPos);
-                    if(exp === null) throw Error('Missing expression in let statement ')
-
-                    if(tokenPos < tokenList.length)
+                    if(exp !== null && tokenPos < tokenList.length)
                     {
-                        if(tokenList[tokenPos] !== ';') throw Error('Missing semicolon in let statement');
-                        return [{class : 'LetStmt', param : param, exp : exp} , tokenPos + 1]
+                        if(tokenList[tokenPos] === ';')
+                        {
+                            return [{class : 'LetStmt', param : param, exp : exp} , tokenPos + 1]
+                        }
+                        else throw Error('Missing semicolon in let statement');
                     }
+                    else throw Error('Missing expression in let statement ');
                 }
+                else throw Error('Missing "=" in let statement');
             }
+            else throw Error('Missing parameter after let keyword');
         }
     }
-
     return [null, tokenPos];
 }
 
@@ -73,22 +90,22 @@ export const parseVarStmt = (tokenList, tokenPos) => {
         if(tokenPos < tokenList.length)
         {
             token = tokenList[token];
-            if(token.type !== 'equals') throw Error('Missing "=" in var statement');
-
             tokenPos++;
-            if(tokenPos < tokenList.length)
+            if(token.type === 'equals' && tokenPos < tokenList.length)
             {
                 var exp;
                 [exp, tokenPos] = parseExp(tokenList, tokenPos);
-                if(exp === null) throw Error('Missing expression in var statement');
-
-                if(tokenPos < tokenList.length)
+                if(exp !== null && tokenPos < tokenList.length)
                 {
-                    if(tokenList[tokenPos].type !== 'semicolon') throw Error('Missing semicolon in var statement');
-
-                    return [{class : 'VarStmt', varName : varName, exp : exp}, tokenPos + 1];
+                    if(tokenList[tokenPos].type === 'semicolon')
+                    {
+                        return [{class : 'VarStmt', varName : varName, exp : exp}, tokenPos + 1];
+                    } 
+                    else throw Error('Missing semicolon in var statement');    
                 }
+                else throw Error('Missing expression in var statement');
             }
+            else throw Error('Missing "=" in var statement');
         }
     }
     return [null, tokenPos];
@@ -103,28 +120,20 @@ export const parseIfStmt = (tokenList, tokenPos) => {
         if(tokenPos < tokenList.length)
         {
             token = tokenList[tokenPos];
-            if(token.type !== 'lParen') throw Error('Missing left paren in if statement');
-
             tokenPos++;
-            if(tokenPos < tokenList.length)
+            if(token.type === 'lParen' && tokenPos < tokenList.length)
             {
                 var condition;
                 [condition, tokenPos] = parseExp(tokenList, tokenPos);
-                if(condition === null) throw Error('Missing if statement condition');
-    
-                if(tokenPos < tokenList.length)
+                if(condition !== null && tokenPos < tokenList.length)
                 {
                     token = tokenList[tokenPos];
-                    if(token.type !== 'rParen') throw Error('Missing right paren in if statement');
-
                     tokenPos++;
-                    if(tokenPos < tokenList.length)
+                    if(token.type === 'rParen' && tokenPos < tokenList.length)
                     {
                         var ifBranch;
                         [ifBranch, tokenPos] = parseStmt(tokenList, tokenPos);
-                        if(ifBranch === null) throw Error('If statement body not found');
-
-                        if(tokenPos < tokenList.length)
+                        if(ifBranch !== null && tokenPos < tokenList.length)
                         {
                             token = tokenList[tokenPos];
                             //case no else branch
@@ -139,17 +148,158 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                             {
                                 var elseBranch;
                                 [elseBranch, tokenPos] = parseStmt(tokenList, tokenPos);
-                                if(elseBranch === null) throw Error('Else statement body not found');
-
-                                return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos + 1];
+                                if(elseBranch !== null)
+                                {
+                                    return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos + 1];
+                                }
+                                else throw Error('Else statement body not found');
                             }
                         }
+                        else throw Error('If statement body not found');
                     }
+                    else throw Error('Missing right paren in if statement');
                 }
+                else throw Error('Missing if statement condition');
             }
-            
+            else throw Error('Missing left paren in if statement');
         }
     }
-    
+    return [null, tokenPos];
+}
+
+//`while` `(` exp `)` stmt |
+export const parseWhileStmt = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    if (token.type === 'keyword' && token.data === 'while')
+    {
+        tokenPos++;
+        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'lParen')
+        {
+            var condition;
+            [condition, tokenPos] = parseExp(tokenList, tokenPos + 1);
+            if(condition !== null && tokenPos < tokenList.length)
+            {
+                if(tokenList[tokenPos].type === 'rParen')
+                {
+                    var body;
+                    [body, tokenPos] = parseStmt(tokenList, tokenPos + 1);
+                    if(body !== null)
+                    {
+                        return [{class : 'WhileStmt', condition : condition, body : body}, tokenPos + 1]
+                    }
+                    else throw Error('while statement body not found');
+                }
+                else throw Error('missing right paren in while statement');
+            }
+            else throw Error('missing condition in while statement');
+        }
+        else throw Error('missing left paren in while statement');
+    }
+    return [null, tokenPos];
+}
+
+//`break` `;`
+export const parseBreakStmt = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    if(token.type === 'keyword' && token.data === 'break')
+    {
+        tokenPos++;
+        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
+        {
+            return [{class : 'break statement'}, tokenPos + 1];
+        }
+        throw Error('Missing semicolon in break statement');
+    }
+    return [null, tokenPos];
+}
+
+//`println` `(` exp `)`
+export const printlnStmt = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    if (token.type === 'keyword' && token.data === 'println')
+    {
+        tokenPos++;
+        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'lParen')
+        {
+            var exp;
+            [exp, tokenPos] = parseExp(tokenList, tokenPos + 1);
+            if(exp !== null)
+            {
+                if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
+                {
+                    return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                }
+                else throw Error('missing right paren in println statement');
+            }
+            else throw Error('println missing expression');
+        }
+        else throw Error('missing left paren in println statement');
+    }
+    return [null, tokenPos];
+}
+
+//`{` stmt* `}`
+export const blockStmt = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    if(token.type === 'lBracket')
+    {
+        var stmtList = [];
+        tokenPos++;
+        if(tokenPos < tokenList.length)
+        {
+            var stmt;
+            [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
+            while(stmt !== null && tokenPos < tokenList.length)
+            {
+                stmtList.push(stmt);
+                [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
+            }
+
+            if(tokenList[tokenPos].type === 'rBracket')
+            {
+                return [{class : 'BlockStmt', stmtList : stmtList}, tokenPos + 1];
+            }
+            else throw Error('block statement missing right bracket');
+        }
+        else throw Error('block statement missing right bracket')
+    }
+    return [null, tokenPos];
+}
+
+//`return` [exp] `;`
+export const returnStmt = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+    if(token.type === 'keyword' && token.data === 'return')
+    {
+        tokenPos++;
+        if(tokenPos < tokenList.length)
+        {
+            var exp;
+            [exp, tokenPos] = parseExp(tokenList, tokenPos);
+
+            if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
+            {
+                if(exp === null) return [{class : 'ReturnStmt'}, tokenPos + 1];
+                return [{class : 'ReturnExpStmt', exp : exp}, tokenPos + 1];
+            }
+            else throw Error('missing semicolon on return statement');
+        }
+        else throw Error('missing semicolon on return statement');
+    }
+    return [null, tokenPos];
+}
+
+//exp `;` 
+export const expStmt = (tokenList, tokenPos) => {
+    var exp;
+    [exp, tokenPos] = parseExp(tokenList, tokenPos);
+    if(exp !== null)
+    {
+        if(tokenList[tokenPos].type === 'semicolon')
+        {
+            return [{class : 'ExpStmt', exp : exp}, tokenPos + 1];
+        }
+        else throw Error('Missing semicolon on expression statement');
+    }
     return [null, tokenPos];
 }
