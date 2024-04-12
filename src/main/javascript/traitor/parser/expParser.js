@@ -1,3 +1,4 @@
+import ParseError from './parseError.js';
 import main from '../tokenizer/tokenizer.js'
 import * as util from 'util';
 
@@ -28,7 +29,7 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
             break;
     }
 
-    throw Error('Parse Error Expected Expression, Received: ' + token.data);
+    throw new ParseError('Expected Expression, Received: ' + token.data);
 }
 
 // primary_exp ::= `(` exp `)`
@@ -44,9 +45,9 @@ const parsePrimaryParen = (tokenList, tokenPos) => {
                 tokenPos++;
                 return [{class:'ParenExp', exp:expResult}, tokenPos];
             }
-            else throw Error('Parse Error Missing `)` In Parenthesized Expression');
+            else throw new ParseError('Missing `)` In Parenthesized Expression');
         }
-        else throw Error('Parse Error Missing Expression In Parenthesized Expression');
+        else throw new ParseError('Missing Expression In Parenthesized Expression');
     }
     else return [null, tokenPos];
 }
@@ -65,9 +66,9 @@ const parseStructActualParam = (tokenList, tokenPos) => {
             if (expResult != null) {
                 return [{class:'StructParam', varName:varName, exp:expResult}, tokenPos];
             }
-            else throw Error("Parse Error Missing Expression on Struct Param");
+            else throw new ParseError("Missing Expression on Struct Param");
         }
-        else throw Error("Parse Error Missing `:` on Struct Param");
+        else throw new ParseError("Missing `:` on Struct Param");
     }
     else return [null, tokenPos];
 }
@@ -85,7 +86,7 @@ const parseStructActualParams = (tokenList, tokenPos) => {
             tokenPos++;
             [paramResult, tokenPos] = parseStructActualParam(tokenList, tokenPos);
         }
-        else throw Error('Parse Error Missing Comma Between Params');
+        else throw new ParseError('Missing Comma Between Params');
     }
     return [{class:'StructParams', list:paramList}, tokenPos];
 }
@@ -109,11 +110,11 @@ const parseNewStructInstance = (tokenList, tokenPos) => {
                     tokenPos++;
                     return [{class:'NewStructExp', structName:structName, params:structParams}, tokenPos]
                 }
-                else throw Error('Parse Error Missing `}` on Struct Instantiation');
+                else throw new ParseError('Missing `}` on Struct Instantiation');
             }
-            else throw Error('Parse Error Missing `{` on Struct Instantiation');
+            else throw new ParseError('Missing `{` on Struct Instantiation');
         }
-        else throw Error('Parse Error Missing Struct Name on Struct Instantiation');
+        else throw new ParseError('Missing Struct Name on Struct Instantiation');
     }
     else return [null, tokenPos]
 }
@@ -153,7 +154,7 @@ const parseDotExp = (tokenList, tokenPos) => {
                 tokenPos++;
                 token = tokenList[tokenPos];
             }
-            else throw Error('Parse Error Missing variable on Dot Expression');
+            else throw new ParseError('Missing variable on Dot Expression');
         }
         return [primaryResult, tokenPos];
     }
@@ -173,7 +174,7 @@ const parseCommaExp = (tokenList, tokenPos) => {
             tokenPos++;
             [parseResult, tokenPos] = parseExp(tokenList, tokenPos);
         }
-        else throw Error('Parse Error Missing Comma Between Expressions');
+        else throw new ParseError('Missing Comma Between Expressions');
     }
     return [{class:'CommaExp', list:resultList}, tokenPos];
 }
@@ -194,7 +195,7 @@ const parseCallExp = (tokenList, tokenPos) => {
                 tokenPos++;
                 token = tokenList[tokenPos];
             }
-            else throw Error('Parse Error Missing `)` on Call Expression');
+            else throw new ParseError('Missing `)` on Call Expression');
         }
         return [dotResult, tokenPos];
     }
@@ -215,7 +216,7 @@ const parseMultExp = (tokenList, tokenPos) => {
                 leftResult = {class:'BinOpExp', op:token.data, left:leftResult, right:rightResult};
                 token = tokenList[tokenPos];
             }
-            else throw Error('Parse Error Missing Value on BinOp Expression');
+            else throw new ParseError('Missing Value on BinOp Expression');
         }
         return [leftResult, tokenPos];
     }
@@ -236,7 +237,7 @@ const parseAddExp = (tokenList, tokenPos) => {
                 leftResult = {class:'BinOpExp', op:token.data, left:leftResult, right:rightResult};
                 token = tokenList[tokenPos];
             }
-            else throw Error('Parse Error Missing Value on BinOp Expression');
+            else throw new ParseError('Missing Value on BinOp Expression');
         }
         return [leftResult, tokenPos];
     }
@@ -256,7 +257,7 @@ const parseLessThanExp = (tokenList, tokenPos) => {
             if (rightResult != null) {
                 addResult = {class:'LessThanExp', left:addResult, right:rightResult};
             }
-            else throw Error('Parse Error Missing Value on LessThan Expression');
+            else throw new ParseError('Missing Value on LessThan Expression');
         }
         return [addResult, tokenPos];
     }
@@ -276,7 +277,7 @@ const parseEqualsExp = (tokenList, tokenPos) => {
             if (rightResult != null) {
                 lessThanResult = {class:'DoubleEqualsExp', left:lessThanResult, right:rightResult};
             }
-            else throw Error('Parse Error Missing Value on DoubleEquals Expression');
+            else throw new ParseError('Missing Value on DoubleEquals Expression');
         }
         else if (tokenPos < tokenList.length && token.type == 'notEquals') {
             var rightResult;
@@ -284,7 +285,7 @@ const parseEqualsExp = (tokenList, tokenPos) => {
             if (rightResult != null) {
                 lessThanResult = {class:'NotEqualsExp', left:lessThanResult, right:rightResult};
             }
-            else throw Error('Parse Error Missing Value on NotEquals Expression');
+            else throw new ParseError('Missing Value on NotEquals Expression');
         }
         return [lessThanResult, tokenPos];
     }

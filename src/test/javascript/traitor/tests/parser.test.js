@@ -2,6 +2,7 @@ import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
 import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
+import ParseError from "../../../../main/javascript/traitor/parser/parseError.js";
 import * as util from 'util';
 
 describe('Type Parsing Test', () => {
@@ -52,7 +53,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error Unknown Type: +"));
+            expect(err).toStrictEqual(new ParseError("Unknown Type: +"));
         }
     })
     it('Testing missing right paren in ParenType parsing', () => {
@@ -64,7 +65,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             // console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error No Right Paren On ParenType"));
+            expect(err).toStrictEqual(new ParseError("No Right Paren On ParenType"));
         }
     })
     it('Testing missing right paren in FuncType parsing', () => {
@@ -76,7 +77,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             // console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error No Right Paren On FuncType"));
+            expect(err).toStrictEqual(new ParseError("No Right Paren On FuncType"));
         }
     })
     it('Testing missing right arrow in FuncType parsing', () => {
@@ -88,7 +89,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error Missing Right Arrow On FuncType"));
+            expect(err).toStrictEqual(new ParseError("Missing Right Arrow On FuncType"));
         }
     })
     it('Testing missing exit in FuncType parsing', () => {
@@ -100,7 +101,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error No Exit On FuncType"));
+            expect(err).toStrictEqual(new ParseError("No Exit On FuncType"));
         }
     })
     it('Testing missing comma in comma type', () => {
@@ -112,7 +113,7 @@ describe('Type Parsing Test', () => {
             [parseResult, pos] = parseType(tokens, pos);
             console.log(parseResult);
         } catch(err) {
-            expect(err).toStrictEqual(new Error("Parse Error Missing Comma Between Types"));
+            expect(err).toStrictEqual(new ParseError("Missing Comma Between Types"));
         }
     })
 })
@@ -142,7 +143,7 @@ describe('Def Parsing Test', () => {
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
-            expect(err).toStrictEqual(new Error('Parse Error Missing `}` on struct definition'));
+            expect(err).toStrictEqual(new ParseError('Missing `}` on struct definition'));
         }
     })
     it('Testing missing comma from struct def params', () => {
@@ -151,7 +152,7 @@ describe('Def Parsing Test', () => {
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
-            expect(err).toStrictEqual(new Error('Parse Error Missing Comma Between Params'));
+            expect(err).toStrictEqual(new ParseError('Missing Comma Between Params'));
         }
     })
     it('Testing missing left bracket from struct def', () => {
@@ -160,7 +161,7 @@ describe('Def Parsing Test', () => {
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
-            expect(err).toStrictEqual(new Error('Parse Error Missing `{` on struct definition'));
+            expect(err).toStrictEqual(new ParseError('Missing `{` on struct definition'));
         }
     })
     it('Testing missing structname from struct def', () => {
@@ -169,7 +170,7 @@ describe('Def Parsing Test', () => {
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
-            expect(err).toStrictEqual(new Error('Parse Error Missing structname on struct definition'));
+            expect(err).toStrictEqual(new ParseError('Missing structname on struct definition'));
         }
     })
     it('Testing empty params from struct def', () => {
@@ -264,7 +265,7 @@ describe('Exp Parsing Test', () => {
             const [parseResult, pos] = parseExp(tokens, 0);
         }
         catch (err) {
-            expect(err).toStrictEqual(new Error('Parse Error Expected Expression, Received: =>'))
+            expect(err).toStrictEqual(new ParseError('Expected Expression, Received: =>'))
         }
     })
     it('Testing parsing empty expression', () => {
@@ -349,7 +350,7 @@ describe('Exp Parsing Test', () => {
       try {
         const [parseRes, pos] = parseExp(tokens, 0);
       } catch (err) {
-        expect(err).toStrictEqual(new Error('Parse Error Missing `)` In Parenthesized Expression'));
+        expect(err).toStrictEqual(new ParseError('Missing `)` In Parenthesized Expression'));
       }
     })
     it('Testing missing expression on paren exp', () => {
@@ -358,7 +359,7 @@ describe('Exp Parsing Test', () => {
       try {
         const [parseRes, pos] = parseExp(tokens, 0);
       } catch (err) {
-        expect(err).toStrictEqual(new Error('Parse Error Missing Expression In Parenthesized Expression'));
+        expect(err).toStrictEqual(new ParseError('Missing Expression In Parenthesized Expression'));
       }
     })
     it('Parsing new struct instantiation no params', () => {

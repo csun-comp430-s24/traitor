@@ -1,5 +1,6 @@
 import { parseParam } from "./defParser.js";
 import parseExp from "./expParser.js";
+import ParseError from "./parseError.js";
 import main from "../tokenizer/tokenizer.js";
 
 //BOUNDS CHECKING NOTE: FUNCS ALWAYS ASSUME THAT TOKENPOSE IS WITHIN BOUNDS INITIALLY
@@ -36,7 +37,7 @@ export const parseStmt = (tokenList, tokenPos) => {
         [parseResult, tokenPos] = expStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
-        throw Error('Not a valid statement');
+        throw new ParseError('Not a valid statement');
     }
      
     return [null, tokenPos];
@@ -64,13 +65,13 @@ export const parseLetStmt = (tokenList, tokenPos) => {
                     {
                         return [{class : 'LetStmt', param : param, exp : exp} , tokenPos + 1]
                     }
-                    else throw Error('Missing semicolon in let statement');
+                    else throw new ParseError('Missing semicolon in let statement');
                 }
-                else throw Error('Missing expression in let statement ');
+                else throw new ParseError('Missing expression in let statement ');
             }
-            else throw Error('Missing "=" in let statement');
+            else throw new ParseError('Missing "=" in let statement');
         }
-        else throw Error('Missing parameter after let keyword');
+        else throw new ParseError('Missing parameter after let keyword');
     }
     return [null, tokenPos];
 }
@@ -93,11 +94,11 @@ export const parseVarStmt = (tokenList, tokenPos) => {
                 {
                     return [{class : 'VarStmt', varName : varName, exp : exp}, tokenPos + 1];
                 } 
-                else throw Error('Missing semicolon in var statement');    
+                else throw new ParseError('Missing semicolon in var statement');    
             }
-            else throw Error('Missing expression in var statement');
+            else throw new ParseError('Missing expression in var statement');
         }
-        else throw Error('Missing "=" in var statement');
+        else throw new ParseError('Missing "=" in var statement');
     }
     else return [null, tokenPos];
 }
@@ -136,15 +137,15 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                         {
                             return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos + 1];
                         }
-                        else throw Error('Else statement body not found');
+                        else throw new ParseError('Else statement body not found');
                     }
-                    else throw Error('If statement body not found');
+                    else throw new ParseError('If statement body not found');
                 }
-                else throw Error('Missing right paren in if statement');
+                else throw new ParseError('Missing right paren in if statement');
             }
-            else throw Error('Missing if statement condition');
+            else throw new ParseError('Missing if statement condition');
         }
-        else throw Error('Missing left paren in if statement');
+        else throw new ParseError('Missing left paren in if statement');
     }
     return [null, tokenPos];
 }
@@ -169,13 +170,13 @@ export const parseWhileStmt = (tokenList, tokenPos) => {
                     {
                         return [{class : 'WhileStmt', condition : condition, body : body}, tokenPos + 1]
                     }
-                    else throw Error('while statement body not found');
+                    else throw new ParseError('while statement body not found');
                 }
-                else throw Error('missing right paren in while statement');
+                else throw new ParseError('missing right paren in while statement');
             }
-            else throw Error('missing condition in while statement');
+            else throw new ParseError('missing condition in while statement');
         }
-        else throw Error('missing left paren in while statement');
+        else throw new ParseError('missing left paren in while statement');
     }
     return [null, tokenPos];
 }
@@ -190,7 +191,7 @@ export const parseBreakStmt = (tokenList, tokenPos) => {
         {
             return [{class : 'break statement'}, tokenPos + 1];
         }
-        throw Error('Missing semicolon in break statement');
+        throw new ParseError('Missing semicolon in break statement');
     }
     return [null, tokenPos];
 }
@@ -211,11 +212,11 @@ export const printlnStmt = (tokenList, tokenPos) => {
                 {
                     return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
                 }
-                else throw Error('missing right paren in println statement');
+                else throw new ParseError('missing right paren in println statement');
             }
-            else throw Error('println missing expression');
+            else throw new ParseError('println missing expression');
         }
-        else throw Error('missing left paren in println statement');
+        else throw new ParseError('missing left paren in println statement');
     }
     return [null, tokenPos];
 }
@@ -241,9 +242,9 @@ export const blockStmt = (tokenList, tokenPos) => {
             {
                 return [{class : 'BlockStmt', stmtList : stmtList}, tokenPos + 1];
             }
-            else throw Error('block statement missing right bracket');
+            else throw new ParseError('block statement missing right bracket');
         }
-        else throw Error('block statement missing right bracket')
+        else throw new ParseError('block statement missing right bracket')
     }
     return [null, tokenPos];
 }
@@ -264,9 +265,9 @@ export const returnStmt = (tokenList, tokenPos) => {
                 if(exp === null) return [{class : 'ReturnStmt'}, tokenPos + 1];
                 return [{class : 'ReturnExpStmt', exp : exp}, tokenPos + 1];
             }
-            else throw Error('missing semicolon on return statement');
+            else throw new ParseError('missing semicolon on return statement');
         }
-        else throw Error('missing semicolon on return statement');
+        else throw new ParseError('missing semicolon on return statement');
     }
     return [null, tokenPos];
 }
@@ -281,7 +282,7 @@ export const expStmt = (tokenList, tokenPos) => {
         {
             return [{class : 'ExpStmt', exp : exp}, tokenPos + 1];
         }
-        else throw Error('Missing semicolon on expression statement');
+        else throw new ParseError('Missing semicolon on expression statement');
     }
     return [null, tokenPos];
 }

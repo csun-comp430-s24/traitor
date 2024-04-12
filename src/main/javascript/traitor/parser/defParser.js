@@ -1,4 +1,5 @@
 import parseType from './typeParser.js'
+import ParseError from './parseError.js';
 import { parseStmt } from './stmt.js';
 import main from '../tokenizer/tokenizer.js'
 import * as util from 'util';
@@ -18,9 +19,9 @@ export const parseParam = (tokenList, tokenPos) => {
             if (parseResult != null) {
                 return [{class:'Param', varName:varName, type:parseResult}, tokenPos];
             }
-            else throw Error('Parse Error Missing Type On Param');
+            else throw new ParseError('Missing Type On Param');
         }
-        else throw Error('Parse Error Missing `:` on Param');
+        else throw new ParseError('Missing `:` on Param');
     }
     else return [null, tokenPos];
 }
@@ -38,9 +39,9 @@ const parseCommaParam = (tokenList, tokenPos) => {
         if (tokenList[tokenPos].type == 'comma') {
             tokenPos++;
             [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
-            if (parseResult == null) throw Error('Parse Error Extra Comma Found On Params');
+            if (parseResult == null) throw new ParseError('Extra Comma Found On Params');
         }
-        else throw Error('Parse Error Missing Comma Between Params');
+        else throw new ParseError('Missing Comma Between Params');
     }
     return [{class:'CommaParam', list:paramList}, tokenPos]
 }
@@ -64,11 +65,11 @@ export const parseStructDef = (tokenList, tokenPos) => {
                     tokenPos++;
                     return [{class:'StructDef', structName:structName, params:commaParams}, tokenPos]
                 }
-                else throw Error('Parse Error Missing `}` on struct definition');
+                else throw new ParseError('Missing `}` on struct definition');
             }
-            else throw Error('Parse Error Missing `{` on struct definition');
+            else throw new ParseError('Missing `{` on struct definition');
         }
-        else throw Error('Parse Error Missing structname on struct definition');
+        else throw new ParseError('Missing structname on struct definition');
     }
     else return [null, tokenPos];
 }
@@ -99,17 +100,17 @@ const parseAbsMethodDef = (tokenList, tokenPos) => {
                                 tokenPos++;
                                 return [{class:'AbstractMethodDef', methodName:methodName, params:commaParams, type:typeResult}, tokenPos]
                             }
-                            else throw Error('Parse Error Missing `;` on abstract method definition');
+                            else throw new ParseError('Missing `;` on abstract method definition');
                         }
-                        else throw Error('Parse Error Missing type on abstract method definition');
+                        else throw new ParseError('Missing type on abstract method definition');
                     }
-                    else throw Error('Parse Error Missing `:` on abstract method definition');
+                    else throw new ParseError('Missing `:` on abstract method definition');
                 }
-                else throw Error('Parse Error Missing `)` on abstract method definition');
+                else throw new ParseError('Missing `)` on abstract method definition');
             }
-            else throw Error('Parse Error Missing `(` on abstract method definition');
+            else throw new ParseError('Missing `(` on abstract method definition');
         }
-        else throw Error('Parse Error Missing method name on abstract method definition');
+        else throw new ParseError('Missing method name on abstract method definition');
     }
     else return [null, tokenPos];
 }
@@ -150,19 +151,19 @@ const parseConcMethodDef = (tokenList, tokenPos) => {
                                     tokenPos++;
                                     return [{class:'ConcreteMethodDef', methodName:methodName, params:commaParams, type:typeResult, stmts:stmts}, tokenPos]
                                 }
-                                else throw Error('Parse Error Missing `}` on concrete method definition');
+                                else throw new ParseError('Missing `}` on concrete method definition');
                             }
-                            else throw Error('Parse Error Missing `{` on concrete method definition');
+                            else throw new ParseError('Missing `{` on concrete method definition');
                         }
-                        else throw Error('Parse Error Missing type on concrete method definition');
+                        else throw new ParseError('Missing type on concrete method definition');
                     }
-                    else throw Error('Parse Error Missing `:` on concrete method definition');
+                    else throw new ParseError('Missing `:` on concrete method definition');
                 }
-                else throw Error('Parse Error Missing `)` on concrete method definition');
+                else throw new ParseError('Missing `)` on concrete method definition');
             }
-            else throw Error('Parse Error Missing `(` on concrete method definition');
+            else throw new ParseError('Missing `(` on concrete method definition');
         }
-        else throw Error('Parse Error Missing method name on concrete method definition');
+        else throw new ParseError('Missing method name on concrete method definition');
     }
     else return [null, tokenPos];
 }
@@ -191,16 +192,20 @@ export const parseTraitDef = (tokenList, tokenPos) => {
                     tokenPos++;
                     return [{class:'TraitDef', traitName:traitName, absMethodList:absMethodList}, tokenPos]
                 }
-                else throw Error('Parse Error Missing `}` on trait definition');
+                else throw new ParseError('Missing `}` on trait definition');
             }
-            else throw Error('Parse Error Missing `{` on trait definition');
+            else throw new ParseError('Missing `{` on trait definition');
         }
-        else throw Error('Parse Error Missing trait name on trait definition');
+        else throw new ParseError('Missing trait name on trait definition');
     }
     else return [null, tokenPos];
 }
 
-const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; }';
+export const parseImplDef = (tokenList, tokenPos) => {
+    
+}
+
+const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; ';
 const tokens = main(test);
 const [parseRes, pos] = parseConcMethodDef(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));

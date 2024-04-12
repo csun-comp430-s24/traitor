@@ -1,3 +1,5 @@
+import ParseError from "./parseError.js";
+
 // type ::= `Int` | `Void` | `Boolean` | `Self` | structname
 const parseBuiltIn = (tokenList, tokenPos) => {
     const token = tokenList[tokenPos];
@@ -22,7 +24,7 @@ const parseBuiltIn = (tokenList, tokenPos) => {
     else if (token.type == 'lParen' || token.type == 'rParen' || token.type == 'rightArrow' || token.type == 'comma') {
         return [null, tokenPos];
     }
-    else throw Error("Parse Error Unknown Type: " + token.data);
+    else throw new ParseError("Unknown Type: " + token.data);
 }
 
 // type ::= `(` type `)`
@@ -38,7 +40,7 @@ const parseParenType = (tokenList, tokenPos) => {
             return [{class:'ParenType', value:parseResult}, tokenPos+1];
         }
         else {
-            throw Error('Parse Error No Right Paren On ParenType');
+            throw new ParseError('No Right Paren On ParenType');
         }    
     }
     else return [null, tokenPos];
@@ -57,7 +59,7 @@ const parseCommaType = (tokenList, tokenPos) => {
             tokenPos++;
             [parseResult, tokenPos] = parseType(tokenList, tokenPos);
         }
-        else throw Error('Parse Error Missing Comma Between Types');
+        else throw new ParseError('Missing Comma Between Types');
     }
     return [{class:'CommaType', list:resultList}, tokenPos];
 }
@@ -78,20 +80,20 @@ const parseFunctionType = (tokenList, tokenPos) => {
                 if (outParseResult != null) {
                     return [{class:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
                 }
-                else throw Error('Parse Error No Exit On FuncType');
+                else throw new ParseError('No Exit On FuncType');
             }
             else {
                 if (inParseResult.list.length == 1) {
                     return [null, tokenPos - 3];
                 }
-                else throw Error('Parse Error Missing Right Arrow On FuncType');
+                else throw new ParseError('Missing Right Arrow On FuncType');
             }
         }
         else {
             if (inParseResult.list.length == 1) {
                 return [null, tokenPos - 2];
             }
-            else throw Error('Parse Error No Right Paren On FuncType');
+            else throw new ParseError('No Right Paren On FuncType');
         }
     }
     else return [null, tokenPos];
