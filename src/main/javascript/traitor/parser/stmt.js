@@ -289,5 +289,5 @@ export const expStmt = (tokenList, tokenPos) => {
 const test0 = 'if(1<2) var1 = 1; else var1 = 2;'
 const tokens0 = main(test0);
 const [parseRes0, pos0] = parseStmt(tokens0, 0);
-console.log(parseRes0);
-console.log(pos0);
+// console.log(util.inspect(parseRes0, false, null, true));
+// console.log(pos0);

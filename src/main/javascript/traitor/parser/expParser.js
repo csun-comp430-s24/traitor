@@ -1,6 +1,7 @@
 import main from '../tokenizer/tokenizer.js'
 import * as util from 'util';
 
+// primary_exp ::= i | var | `true` | `false` | `self`
 const parsePrimarySingle = (tokenList, tokenPos) => {
     if (tokenPos >= tokenList.length) return [null, tokenPos];
 
@@ -30,6 +31,7 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
     throw Error('Parse Error Expected Expression, Received: ' + token.data);
 }
 
+// primary_exp ::= `(` exp `)`
 const parsePrimaryParen = (tokenList, tokenPos) => {
     var expResult;
 
@@ -49,6 +51,7 @@ const parsePrimaryParen = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// struct_actual_param ::= var `:` exp
 const parseStructActualParam = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
@@ -69,6 +72,7 @@ const parseStructActualParam = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// struct_actual_params ::= [struct_actual_param (`,` struct_actual_param)*]
 const parseStructActualParams = (tokenList, tokenPos) => {
     const paramList = [];
     var paramResult;
@@ -86,6 +90,7 @@ const parseStructActualParams = (tokenList, tokenPos) => {
     return [{class:'StructParams', list:paramList}, tokenPos];
 }
 
+// primary_exp ::= `new` structname `{` struct_actual_params `}`
 const parseNewStructInstance = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
     var structParams;
@@ -113,6 +118,7 @@ const parseNewStructInstance = (tokenList, tokenPos) => {
     else return [null, tokenPos]
 }
 
+// primary_exp ::= i | var | `true` | `false` | `self` | `(` exp `)` | `new` structname `{` struct_actual_params `}`
 const parsePrimaryExp = (tokenList, tokenPos) => {
     var parseResult;
     
@@ -131,6 +137,7 @@ const parsePrimaryExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// dot_exp ::= primary_exp (`.` var)*
 const parseDotExp = (tokenList, tokenPos) => {
     var primaryResult;
     [primaryResult, tokenPos] = parsePrimaryExp(tokenList, tokenPos);
@@ -153,6 +160,7 @@ const parseDotExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// comma_exp ::= [exp (`,` exp)*]
 const parseCommaExp = (tokenList, tokenPos) => {
     const resultList = [];
     var parseResult;
@@ -170,6 +178,7 @@ const parseCommaExp = (tokenList, tokenPos) => {
     return [{class:'CommaExp', list:resultList}, tokenPos];
 }
 
+// call_exp ::= dot_exp (`(` comma_exp `)`)*
 const parseCallExp = (tokenList, tokenPos) => {
     var dotResult;
     [dotResult, tokenPos] = parseDotExp(tokenList, tokenPos);
@@ -192,6 +201,7 @@ const parseCallExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// mult_exp ::= call_exp ((`*` | `/`) call_exp)*
 const parseMultExp = (tokenList, tokenPos) => {
     var leftResult;
     [leftResult, tokenPos] = parseCallExp(tokenList, tokenPos);
@@ -212,6 +222,7 @@ const parseMultExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// add_exp ::= mult_exp ((`+` | `-`) mult_exp)*
 const parseAddExp = (tokenList, tokenPos) => {
     var leftResult;
     [leftResult, tokenPos] = parseMultExp(tokenList, tokenPos);
@@ -232,6 +243,7 @@ const parseAddExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// less_than_exp ::= add_exp [`<` add_exp]
 const parseLessThanExp = (tokenList, tokenPos) => {
     var addResult;
     [addResult, tokenPos] = parseAddExp(tokenList, tokenPos);
@@ -251,6 +263,7 @@ const parseLessThanExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// equals_exp ::= less_than_exp [(`==` | `!=`) less_than_exp]
 const parseEqualsExp = (tokenList, tokenPos) => {
     var lessThanResult;
     [lessThanResult, tokenPos] = parseLessThanExp(tokenList, tokenPos);
@@ -278,6 +291,7 @@ const parseEqualsExp = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// exp ::= equals_exp
 const parseExp = (tokenList, tokenPos) => {
     var equalsResult;
     [equalsResult, tokenPos] = parseEqualsExp(tokenList, tokenPos);

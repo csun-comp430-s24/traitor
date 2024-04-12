@@ -1,7 +1,9 @@
 import parseType from './typeParser.js'
+import { parseStmt } from './stmt.js';
 import main from '../tokenizer/tokenizer.js'
 import * as util from 'util';
 
+// param ::= var `:` type
 export const parseParam = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
@@ -23,7 +25,8 @@ export const parseParam = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-export const parseCommaParam = (tokenList, tokenPos) => {
+// comma_param ::= [param (`,` param)*]
+const parseCommaParam = (tokenList, tokenPos) => {
     const paramList = [];
     var parseResult;
     [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
@@ -42,6 +45,7 @@ export const parseCommaParam = (tokenList, tokenPos) => {
     return [{class:'CommaParam', list:paramList}, tokenPos]
 }
 
+// structdef ::= `struct` structname `{` comma_param `}`
 export const parseStructDef = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
@@ -69,7 +73,8 @@ export const parseStructDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-export const parseMethodDef = (tokenList, tokenPos) => {
+// abs_methoddef ::= `method` var `(` comma_param `)` `:` type `;`
+const parseAbsMethodDef = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
     var commaParams, typeResult;
@@ -94,7 +99,7 @@ export const parseMethodDef = (tokenList, tokenPos) => {
                                 tokenPos++;
                                 return [{class:'AbstractMethodDef', methodName:methodName, params:commaParams, type:typeResult}, tokenPos]
                             }
-                            else throw Error('Parse Warning Missing `;` on abstract method definition');
+                            else throw Error('Parse Error Missing `;` on abstract method definition');
                         }
                         else throw Error('Parse Error Missing type on abstract method definition');
                     }
@@ -109,6 +114,60 @@ export const parseMethodDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// conc_methoddef ::= `method` var `(` comma_param `)` `:` type `{` stmt* `}`
+const parseConcMethodDef = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+
+    var commaParams, typeResult, stmtResult;
+    const stmts = [];
+    if (tokenPos < tokenList.length && token.type == 'keyword' && token.data == 'method') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type == 'variable') {
+            const methodName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type == 'lParen') {
+                [commaParams, tokenPos] = parseCommaParam(tokenList, tokenPos + 1);
+                token = tokenList[tokenPos];
+                if (tokenPos < tokenList.length && token.type == 'rParen') {
+                    tokenPos++;
+                    token = tokenList[tokenPos];
+                    if (tokenPos < tokenList.length && token.type == 'colon') {
+                        [typeResult, tokenPos] = parseType(tokenList, tokenPos + 1);
+                        if (typeResult != null) {
+                            token = tokenList[tokenPos];
+                            if (tokenPos < tokenList.length && token.type == 'lBracket') {
+                                [stmtResult, tokenPos] = parseStmt(tokenList, tokenPos + 1);
+                                while (stmtResult != null) {
+                                    stmts.push(stmtResult);
+                                    if (tokenPos >= tokenList.length) break;
+                                    if (tokenList[tokenPos].type == 'rBracket') break;
+                                    [stmtResult, tokenPos] = parseStmt(tokenList, tokenPos);
+                                }
+                                token = tokenList[tokenPos];
+                                if (tokenPos < tokenList.length && token.type == 'rBracket') {
+                                    tokenPos++;
+                                    return [{class:'ConcreteMethodDef', methodName:methodName, params:commaParams, type:typeResult, stmts:stmts}, tokenPos]
+                                }
+                                else throw Error('Parse Error Missing `}` on concrete method definition');
+                            }
+                            else throw Error('Parse Error Missing `{` on concrete method definition');
+                        }
+                        else throw Error('Parse Error Missing type on concrete method definition');
+                    }
+                    else throw Error('Parse Error Missing `:` on concrete method definition');
+                }
+                else throw Error('Parse Error Missing `)` on concrete method definition');
+            }
+            else throw Error('Parse Error Missing `(` on concrete method definition');
+        }
+        else throw Error('Parse Error Missing method name on concrete method definition');
+    }
+    else return [null, tokenPos];
+}
+
+// traitdef ::= `trait` traitname `{` abs_methoddef* `}`
 export const parseTraitDef = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
@@ -122,10 +181,10 @@ export const parseTraitDef = (tokenList, tokenPos) => {
             tokenPos++;
             token = tokenList[tokenPos];
             if (tokenPos < tokenList.length && token.type == 'lBracket') {
-                [absMdParseResult, tokenPos] = parseMethodDef(tokenList, tokenPos + 1);
+                [absMdParseResult, tokenPos] = parseAbsMethodDef(tokenList, tokenPos + 1);
                 while (tokenPos < tokenList.length && absMdParseResult != null && absMdParseResult.class == 'AbstractMethodDef') {
                     absMethodList.push(absMdParseResult);
-                    [absMdParseResult, tokenPos] = parseMethodDef(tokenList, tokenPos);
+                    [absMdParseResult, tokenPos] = parseAbsMethodDef(tokenList, tokenPos);
                 }
                 token = tokenList[tokenPos];
                 if (tokenPos < tokenList.length && token.type == 'rBracket') {
@@ -140,3 +199,9 @@ export const parseTraitDef = (tokenList, tokenPos) => {
     }
     else return [null, tokenPos];
 }
+
+const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; }';
+const tokens = main(test);
+const [parseRes, pos] = parseConcMethodDef(tokens, 0);
+console.log(util.inspect(parseRes, false, null, true));
+console.log(pos);

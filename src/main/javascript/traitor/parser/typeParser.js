@@ -1,3 +1,4 @@
+// type ::= `Int` | `Void` | `Boolean` | `Self` | structname
 const parseBuiltIn = (tokenList, tokenPos) => {
     const token = tokenList[tokenPos];
     if (tokenPos >= tokenList.length) return [null, tokenPos];
@@ -24,6 +25,7 @@ const parseBuiltIn = (tokenList, tokenPos) => {
     else throw Error("Parse Error Unknown Type: " + token.data);
 }
 
+// type ::= `(` type `)`
 const parseParenType = (tokenList, tokenPos) => {
     var parseResult;
     var token = tokenList[tokenPos];
@@ -42,6 +44,7 @@ const parseParenType = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// comma_type ::= [type (`,` type)*]
 const parseCommaType = (tokenList, tokenPos) => {
     const resultList = [];
     var parseResult;
@@ -59,6 +62,7 @@ const parseCommaType = (tokenList, tokenPos) => {
     return [{class:'CommaType', list:resultList}, tokenPos];
 }
 
+// type ::= `(` comma_type `)` `=>` type
 const parseFunctionType = (tokenList, tokenPos) => {
     var inParseResult, outParseResult;
     var token = tokenList[tokenPos];
