@@ -27,7 +27,7 @@ export const parseParam = (tokenList, tokenPos) => {
 }
 
 // comma_param ::= [param (`,` param)*]
-const parseCommaParam = (tokenList, tokenPos) => {
+export const parseCommaParam = (tokenList, tokenPos) => {
     const paramList = [];
     var parseResult;
     [parseResult, tokenPos] = parseParam(tokenList, tokenPos);
@@ -205,8 +205,8 @@ export const parseImplDef = (tokenList, tokenPos) => {
     
 }
 
-const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; ';
-const tokens = main(test);
-const [parseRes, pos] = parseConcMethodDef(tokens, 0);
-console.log(util.inspect(parseRes, false, null, true));
-console.log(pos);
+// const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; }';
+// const tokens = main(test);
+// const [parseRes, pos] = parseConcMethodDef(tokens, 0);
+// console.log(util.inspect(parseRes, false, null, true));
+// console.log(pos);

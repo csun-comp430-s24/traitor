@@ -2,6 +2,7 @@ import { parseParam } from "./defParser.js";
 import parseExp from "./expParser.js";
 import ParseError from "./parseError.js";
 import main from "../tokenizer/tokenizer.js";
+import * as util from 'util';
 
 //BOUNDS CHECKING NOTE: FUNCS ALWAYS ASSUME THAT TOKENPOSE IS WITHIN BOUNDS INITIALLY
 //TOKENPOS SHOULD END UP POINTING TO NEXT TOKENTOSEE? PROBABLY
@@ -160,9 +161,9 @@ export const parseWhileStmt = (tokenList, tokenPos) => {
         {
             var condition;
             [condition, tokenPos] = parseExp(tokenList, tokenPos + 1);
-            if(condition !== null && tokenPos < tokenList.length)
+            if(condition !== null)
             {
-                if(tokenList[tokenPos].type === 'rParen')
+                if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
                 {
                     var body;
                     [body, tokenPos] = parseStmt(tokenList, tokenPos + 1);
@@ -287,8 +288,8 @@ export const expStmt = (tokenList, tokenPos) => {
     return [null, tokenPos];
 }
 
-const test0 = 'if(1<2) var1 = 1; else var1 = 2;'
+const test0 = 'while (true) var1 = 1;'
 const tokens0 = main(test0);
-const [parseRes0, pos0] = parseStmt(tokens0, 0);
-// console.log(util.inspect(parseRes0, false, null, true));
-// console.log(pos0);
+const [parseRes0, pos0] = parseWhileStmt(tokens0, 0);
+console.log(util.inspect(parseRes0, false, null, true));
+console.log(pos0);
