@@ -172,7 +172,6 @@ const parseConcMethodDef = (tokenList, tokenPos) => {
 export const parseTraitDef = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
 
-    const absMethodList = [];
     var absMdParseResult;
     if (tokenPos < tokenList.length && token.type == 'keyword' && token.data == 'trait') {
         tokenPos++;
@@ -182,15 +181,18 @@ export const parseTraitDef = (tokenList, tokenPos) => {
             tokenPos++;
             token = tokenList[tokenPos];
             if (tokenPos < tokenList.length && token.type == 'lBracket') {
+                const absMethods = [];
                 [absMdParseResult, tokenPos] = parseAbsMethodDef(tokenList, tokenPos + 1);
-                while (tokenPos < tokenList.length && absMdParseResult != null && absMdParseResult.class == 'AbstractMethodDef') {
-                    absMethodList.push(absMdParseResult);
+                while (absMdParseResult != null) {
+                    absMethods.push(absMdParseResult);
+                    if (tokenPos >= tokenList.length) break;
+                    if (tokenList[tokenPos].type == 'rBracket') break;
                     [absMdParseResult, tokenPos] = parseAbsMethodDef(tokenList, tokenPos);
                 }
                 token = tokenList[tokenPos];
                 if (tokenPos < tokenList.length && token.type == 'rBracket') {
                     tokenPos++;
-                    return [{class:'TraitDef', traitName:traitName, absMethodList:absMethodList}, tokenPos]
+                    return [{class:'TraitDef', traitName:traitName, absMethods:absMethods}, tokenPos]
                 }
                 else throw new ParseError('Missing `}` on trait definition');
             }
@@ -201,12 +203,51 @@ export const parseTraitDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
+// impldef ::= `impl` traitname `for` type `{` conc_methoddef* `}`
 export const parseImplDef = (tokenList, tokenPos) => {
-    
+    var token = tokenList[tokenPos];
+
+    var typeResult, cMParseResult;
+    if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'impl') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type === 'variable') {
+            const traitName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'for') {
+                [typeResult, tokenPos] = parseType(tokenList, tokenPos + 1);
+                if (typeResult != null) {
+                    token = tokenList[tokenPos];
+                    if (tokenPos < tokenList.length && token.type === 'lBracket') {
+                        const concMethods = [];
+                        [cMParseResult, tokenPos] = parseConcMethodDef(tokenList, tokenPos + 1);
+                        while (cMParseResult != null) {
+                            concMethods.push(cMParseResult);
+                            if (tokenPos >= tokenList.length) break;
+                            if (tokenList[tokenPos].type == 'rBracket') break;
+                            [cMParseResult, tokenPos] = parseConcMethodDef(tokenList, tokenPos);
+                        }
+                        token = tokenList[tokenPos];
+                        if (tokenPos < tokenList.length && token.type == 'rBracket') {
+                            tokenPos++;
+                            return [{class:'ImplDef', traitName:traitName, type:typeResult, concMethods:concMethods}, tokenPos]
+                        }
+                        else throw new ParseError('Missing `}` on implementation definition');
+                    }
+                    else throw new ParseError('Missing `{` on implementation definition');
+                }
+                else throw new ParseError('Missing type on implementation definition');
+            }
+            else throw new ParseError('Missing `for` on implementation definition');
+        }
+        else throw new ParseError('Missing traitname on implementation definition');
+    }
+    else return [null, tokenPos];
 }
 
-// const test = 'method m1(p1:Int, p2:Int):Int { var1 = p1; var2 = var1 + p2; }';
-// const tokens = main(test);
-// const [parseRes, pos] = parseConcMethodDef(tokens, 0);
-// console.log(util.inspect(parseRes, false, null, true));
-// console.log(pos);
+const test = 'impl Printable for Int { method  print(): Void {var1 = 1;}}';
+const tokens = main(test);
+const [parseRes, pos] = parseImplDef(tokens, 0);
+console.log(util.inspect(parseRes, false, null, true));
+console.log(pos);
