@@ -4,8 +4,6 @@ import ParseError from "./parseError.js";
 import main from "../tokenizer/tokenizer.js";
 import * as util from 'util';
 
-//BOUNDS CHECKING NOTE: FUNCS ALWAYS ASSUME THAT TOKENPOSE IS WITHIN BOUNDS INITIALLY
-//TOKENPOS SHOULD END UP POINTING TO NEXT TOKENTOSEE? PROBABLY
 export const parseStmt = (tokenList, tokenPos) => {
     //token can be let, var, if, while, break, println, {, return, exp
     if(tokenPos < tokenList.length)
@@ -26,16 +24,16 @@ export const parseStmt = (tokenList, tokenPos) => {
         [parseResult, tokenPos] = parseBreakStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
-        [parseResult, tokenPos] = printlnStmt(tokenList, tokenPos);
+        [parseResult, tokenPos] = parsePrintlnStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
-        [parseResult, tokenPos] = blockStmt(tokenList, tokenPos);
+        [parseResult, tokenPos] = parseBlockStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
-        [parseResult, tokenPos] = returnStmt(tokenList, tokenPos);
+        [parseResult, tokenPos] = parseReturnStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
-        [parseResult, tokenPos] = expStmt(tokenList, tokenPos);
+        [parseResult, tokenPos] = parseExpStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
         throw new ParseError('Not a valid statement');
@@ -198,75 +196,81 @@ export const parseBreakStmt = (tokenList, tokenPos) => {
 }
 
 //`println` `(` exp `)`
-export const printlnStmt = (tokenList, tokenPos) => {
+export const parsePrintlnStmt = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
     if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'println')
     {
         tokenPos++;
-        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'lParen')
+        if(tokenPos < tokenList.length)
         {
-            var exp;
-            [exp, tokenPos] = parseExp(tokenList, tokenPos + 1);
-            if(exp !== null)
+            if(tokenList[tokenPos].type === 'lParen')
             {
-                if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
+                var exp;
+                [exp, tokenPos] = parseExp(tokenList, tokenPos + 1);
+                if(exp !== null)
                 {
-                    return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                    if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
+                    {
+                        return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                    }
+                    else throw new ParseError('missing right paren in println statement');
                 }
-                else throw new ParseError('missing right paren in println statement');
+                else throw new ParseError('println missing expression');
             }
-            else throw new ParseError('println missing expression');
+            else throw new ParseError('missing left paren in println statement');
         }
-        else throw new ParseError('missing left paren in println statement');
     }
     return [null, tokenPos];
 }
 
 //`{` stmt* `}`
-export const blockStmt = (tokenList, tokenPos) => {
-    var token = tokenList[tokenPos];
-    if(tokenPos < tokenList.length && token.type === 'lBracket')
+export const parseBlockStmt = (tokenList, tokenPos) => {
+    if(tokenList[tokenPos].type === 'lBracket')
     {
         var stmtList = [];
         tokenPos++;
-        if(tokenPos < tokenList.length)
+
+        while(tokenPos < tokenList.length && tokenList[tokenPos].type !== 'rBracket')
         {
             var stmt;
             [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
-            while(stmt !== null && tokenPos < tokenList.length)
-            {
-                stmtList.push(stmt);
-                [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
-            }
-
-            if(tokenList[tokenPos].type === 'rBracket')
-            {
-                return [{class : 'BlockStmt', stmtList : stmtList}, tokenPos + 1];
-            }
-            else throw new ParseError('block statement missing right bracket');
+            stmtList.push(stmt);
+            //no null check, parse Stmt throws an error on fail
         }
-        else throw new ParseError('block statement missing right bracket')
+
+        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rBracket')
+        {
+            return [{class : 'BlockStmt', stmtList : stmtList}, tokenPos + 1];
+        }
+        else throw new ParseError('block statement missing right bracket');
     }
     return [null, tokenPos];
 }
 
 //`return` [exp] `;`
-export const returnStmt = (tokenList, tokenPos) => {
+export const parseReturnStmt = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
-    if(tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'return')
+    if(token.type === 'keyword' && token.data === 'return')
     {
         tokenPos++;
         if(tokenPos < tokenList.length)
         {
-            var exp;
-            [exp, tokenPos] = parseExp(tokenList, tokenPos);
-
-            if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
+            if(tokenList[tokenPos].type !== 'semicolon')
             {
-                if(exp === null) return [{class : 'ReturnStmt'}, tokenPos + 1];
-                return [{class : 'ReturnExpStmt', exp : exp}, tokenPos + 1];
+                var exp;
+                [exp, tokenPos] = parseExp(tokenList, tokenPos);
+    
+                if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
+                {
+                    return [{class : 'ReturnExpStmt', exp : exp}, tokenPos + 1];
+                }
+                else throw new ParseError('missing semicolon on return statement');
+
             }
-            else throw new ParseError('missing semicolon on return statement');
+            else
+            {
+                return [{class : 'ReturnStmt'}, tokenPos + 1];
+            }
         }
         else throw new ParseError('missing semicolon on return statement');
     }
@@ -274,7 +278,7 @@ export const returnStmt = (tokenList, tokenPos) => {
 }
 
 //exp `;` 
-export const expStmt = (tokenList, tokenPos) => {
+export const parseExpStmt = (tokenList, tokenPos) => {
     var exp;
     [exp, tokenPos] = parseExp(tokenList, tokenPos);
     if(exp !== null)
@@ -288,8 +292,8 @@ export const expStmt = (tokenList, tokenPos) => {
     return [null, tokenPos];
 }
 
-const test0 = 'while (true) var1 = 1;'
-const tokens0 = main(test0);
-const [parseRes0, pos0] = parseWhileStmt(tokens0, 0);
-console.log(util.inspect(parseRes0, false, null, true));
-console.log(pos0);
+// const test0 = 'while(true) {}'
+// const tokens0 = main(test0);
+// const [parseRes0, pos0] = parseWhileStmt(tokens0, 0);
+// console.log(util.inspect(parseRes0, false, null, true));
+//console.log(pos0);
