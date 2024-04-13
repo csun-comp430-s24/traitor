@@ -126,7 +126,7 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                         //case no else branch
                         if(tokenPos >= tokenList.length || (token.type !== 'keyword' && token.data !== 'else'))
                         {
-                            return [{class: 'IfStmt', condition : condition, trueBranch : ifBranch}, tokenPos + 1];
+                            return [{class: 'IfStmt', condition : condition, trueBranch : ifBranch}, tokenPos];
                         }
 
                         //case where has an else
@@ -134,7 +134,7 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                         [elseBranch, tokenPos] = parseStmt(tokenList, tokenPos + 1);
                         if(elseBranch !== null)
                         {
-                            return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos + 1];
+                            return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos];
                         }
                         else throw new ParseError('Else statement body not found');
                     }
@@ -188,7 +188,7 @@ export const parseBreakStmt = (tokenList, tokenPos) => {
         tokenPos++;
         if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
         {
-            return [{class : 'break statement'}, tokenPos + 1];
+            return [{class:'BreakStmt'}, tokenPos + 1];
         }
         throw new ParseError('Missing semicolon in break statement');
     }

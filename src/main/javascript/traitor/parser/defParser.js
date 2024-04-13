@@ -246,8 +246,64 @@ export const parseImplDef = (tokenList, tokenPos) => {
     else return [null, tokenPos];
 }
 
-const test = 'impl Printable for Int { method  print(): Void {var1 = 1;}}';
+// funcdef ::= `func` var `(` comma_param `)` `:` type `{` stmt* `}`
+export const parseFuncDef = (tokenList, tokenPos) => {
+    var token = tokenList[tokenPos];
+
+    if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'func') {
+        tokenPos++;
+        token = tokenList[tokenPos];
+        if (tokenPos < tokenList.length && token.type === 'variable') {
+            const varName = token.data;
+            tokenPos++;
+            token = tokenList[tokenPos];
+            var commaParam;
+            if (tokenPos < tokenList.length && token.type === 'lParen') {
+                [commaParam, tokenPos] = parseCommaParam(tokenList, tokenPos + 1);
+                token = tokenList[tokenPos];
+                if (tokenPos < tokenList.length && token.type === 'rParen') {
+                    tokenPos++;
+                    token = tokenList[tokenPos];
+                    var type;
+                    if (tokenPos < tokenList.length && token.type === 'colon') {
+                        [type, tokenPos] = parseType(tokenList, tokenPos + 1);
+                        if (type != null) {
+                            token = tokenList[tokenPos];
+                            if (tokenPos < tokenList.length && token.type === 'lBracket') {
+                                const stmts = [];
+                                tokenPos++;
+
+                                while(tokenPos < tokenList.length && tokenList[tokenPos].type !== 'rBracket') {
+                                    var stmt;
+                                    [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
+                                    stmts.push(stmt);
+                                }
+                                
+                                token = tokenList[tokenPos];
+                                if (tokenPos < tokenList.length && token.type === 'rBracket') {
+                                    return [{class:'FuncDef', varName:varName, params:commaParam, type:type, stmts:stmts}, tokenPos + 1];
+                                }
+                                else throw new ParseError('Missing `}` on function definition');
+                            }
+                            else throw new ParseError('Missing `{` on function definition');
+                        }
+                        else throw new ParseError('Missing type on function definition');
+                    }
+                    else throw new ParseError('Missing `:` on function definition');
+                }
+                else throw new ParseError('Missing `)` on function definition');
+            }
+            else throw new ParseError('Missing `(` on function definition');
+        }
+        else throw new ParseError('Missing varname om function definition');
+    }
+    else return [null, tokenPos];
+}
+
+/*
+const test = 'func var1 (p1 : Int, p2 : Int) : Int { let param1:Int = 1 + 1 ; }';
 const tokens = main(test);
-const [parseRes, pos] = parseImplDef(tokens, 0);
+const [parseRes, pos] = parseFuncDef(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);
+*/
