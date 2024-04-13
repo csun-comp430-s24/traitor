@@ -1,5 +1,7 @@
-import { parseImplDef, parseStructDef, parseTraitDef, parseFuncDef } from "./defParser";
-import { parseStmt } from "./stmt";
+import { parseImplDef, parseStructDef, parseTraitDef, parseFuncDef } from "./defParser.js";
+import { parseStmt } from "./stmt.js";
+import tokenize from "../tokenizer/tokenizer.js";
+import * as util from 'util';
 
 //structdef | traitdef | impldef | funcdef
 const parseProgramItem = (tokenList, tokenPos) => {
@@ -32,6 +34,7 @@ const parseProgram = (tokenList) =>
         if(program_item === null) break;
         programItems.push(program_item);
     }
+    // console.log(programItems);
     while(tokenPos < tokenList.length)
     {
         var stmt;
@@ -48,3 +51,10 @@ const parse = (tokenList) => {
 }
 
 export default parse;
+
+/*
+const test = 'impl Printable for IntWrapper { method print(): Void { return; } } let a1: Int = 5;';
+const tokens = tokenize(test);
+const res = parseProgram(tokens);
+console.log(util.inspect(res, false, null, true));
+*/
