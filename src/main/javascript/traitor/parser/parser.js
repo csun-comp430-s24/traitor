@@ -39,7 +39,7 @@ const parseProgram = (tokenList) =>
     {
         var stmt;
         [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
-        if(stmt === null) break;
+        // if(stmt === null) break;         stmt is never null, will always run out of tokens or throw error first
         stmts.push(stmt);
     }
 

@@ -41,7 +41,6 @@ describe('Type Parsing Test', () => {
               }
             }
           }
-        // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(27);
     })
@@ -64,7 +63,6 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
-            // console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new ParseError("No Right Paren On ParenType"));
         }
@@ -76,7 +74,6 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         try { 
             [parseResult, pos] = parseType(tokens, pos);
-            // console.log(parseResult);
         } catch(err) {
             expect(err).toStrictEqual(new ParseError("No Right Paren On FuncType"));
         }
@@ -283,8 +280,53 @@ describe('Def Parsing Test', () => {
         expect(err).toStrictEqual(new ParseError('Missing `;` on abstract method definition'));
       }
     })
+    it('Testing abstract method with missing type', () => {
+      const test = "trait Addable { method print() : ";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing type on abstract method definition'));
+      }
+    })
+    it('Testing abstract method with missing colon', () => {
+      const test = "trait Addable { method print()";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `:` on abstract method definition'));
+      }
+    })
+    it('Testing abstract method with missing right paren', () => {
+      const test = "trait Addable { method print(";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `)` on abstract method definition'));
+      }
+    })
+    it('Testing abstract method with missing left paren', () => {
+      const test = "trait Addable { method print";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `(` on abstract method definition'));
+      }
+    })
+    it('Testing abstract method with missing method name', () => {
+      const test = "trait Addable { method ";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing method name on abstract method definition'));
+      }
+    })
     it('Testing impl definition', () => {
-      const test = "impl Addable for Int { method add(other: Int): Int { return self + other; } }"
+      const test = "impl Addable for Int { method add(other: Int): Int { var1 = self + other; return var1; } method print(): Void {println(self);} }"
       const tokens = tokenize(test);
       const [res, pos] = parseImplDef(tokens, 0);
       const expected = {
@@ -308,26 +350,73 @@ describe('Def Parsing Test', () => {
             type: { class: 'IntType' },
             stmts: [
               {
-                class: 'ReturnExpStmt',
+                class: 'VarStmt',
+                varName: 'var1',
                 exp: {
                   class: 'BinOpExp',
                   op: '+',
                   left: { class: 'SelfExp' },
                   right: { class: 'VarExp', name: 'other' }
                 }
+              },
+              {
+                class: 'ReturnExpStmt',
+                exp: { class: 'VarExp', name: 'var1' }
               }
             ]
+          },
+          {
+            class: 'ConcreteMethodDef',
+            methodName: 'print',
+            params: { class: 'CommaParam', list: [] },
+            type: { class: 'VoidType' },
+            stmts: [ { class: 'PrintlnStmt', exp: { class: 'SelfExp' } } ]
           }
         ]
       }
       expect(res).toStrictEqual(expected);
-      expect(pos).toStrictEqual(22);
+      expect(pos).toStrictEqual(39);
+    })
+    it('Testing missing right bracket on conc method', () => {
+      const test = "impl Nothing for Int { method doNothing(): Int { return;";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseImplDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `}` on concrete method definition'));
+      }
+    })
+    it('Testing missing left bracket on conc method', () => {
+      const test = "impl Nothing for Int { method doNothing(): Int";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseImplDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `{` on concrete method definition'));
+      }
+    })
+    it('Testing missing left bracket on conc method', () => {
+      const test = "impl Nothing for Int { method doNothing():";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseImplDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing type on concrete method definition'));
+      }
+    })
+    it('Testing missing left bracket on conc method', () => {
+      const test = "impl Nothing for Int { method doNothing()";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseImplDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `:` on concrete method definition'));
+      }
     })
     it('Testing function definition', () => {
       const test = "func var1 ( p : Int ) : Int { return 5; }";
       const tokens = tokenize(test);
       const [res, pos] = parseFuncDef(tokens, 0);
-      // console.log(util.inspect(res, false, null, true));
       const expected = {
         class: 'FuncDef',
         varName: 'var1',
@@ -379,7 +468,6 @@ describe('Exp Parsing Test', () => {
             right: { class: 'IntLitExp', value: 4 }
           }
         }
-        // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(15);
     })
@@ -465,7 +553,6 @@ describe('Exp Parsing Test', () => {
             ]
           }
         }
-        // console.log(util.inspect(parseRes, false, null, true));
         expect(parseRes).toStrictEqual(expected);
         expect(pos).toStrictEqual(19);
     })
@@ -499,7 +586,6 @@ describe('Exp Parsing Test', () => {
           list: []
         }
       }
-      // console.log(util.inspect(parseRes, false, null, true));
       expect(parseRes).toStrictEqual(expected);
       expect(pos).toStrictEqual(4);
     })
@@ -512,9 +598,44 @@ describe('Exp Parsing Test', () => {
         left: { class: 'IntLitExp', value: 2 },
         right: { class: 'IntLitExp', value: 2 }
       }
-      // console.log(util.inspect(parseRes, false, null, true));
       expect(parseRes).toStrictEqual(expected);
       expect(pos).toStrictEqual(3);
+    })
+    it('Testing missing Expression on struct actual param', () => {
+      const test = 'new IntWrapper {var1 : ';
+      const tokens = tokenize(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing Expression on Struct Param'));
+      }
+    })
+    it('Testing missing colon on struct actual param', () => {
+      const test = 'new IntWrapper {var1';
+      const tokens = tokenize(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `:` on Struct Param'));
+      }
+    })
+    it('Testing missing comma between struct actual params', () => {
+      const test = 'new IntWrapper {var1 : 1 var2: 2}';
+      const tokens = tokenize(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing Comma Between Params'));
+      }
+    })
+    it('Testing missing right bracket on new struct expression', () => {
+      const test = 'new structname { var1 : 1';
+      const tokens = tokenize(test);
+      try {
+        const [parseRes, pos] = parseExp(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `}` on Struct Instantiation'));
+      }
     })
 })
 
@@ -523,7 +644,6 @@ describe('Stmt Parsing Test', () => {
     const test = 'while(5) {if (false) break; else { let x : Int = 4; x = 8;}} println(5); return 5; 432;';
     const tokens = tokenize(test);
     const parseRes = parse(tokens);
-    //console.log(util.inspect(parseRes, false, null, true));
     const expected = 
     {
       class: 'Program',
@@ -583,8 +703,6 @@ describe('Stmt Parsing Test', () => {
   })
 })
 
-// console.log(util.inspect(parseRes, false, null, true));
-
 describe('Program Parsing Test', () => {
   it('Testing program_items followed by stmt', () => {
       const test = 'struct s {} trait t { } impl t1 for Void {} func foo () : Int { return 5; } { x = 7;}';
@@ -632,7 +750,8 @@ describe('Program Parsing Test', () => {
           }
         ]
       };
-      //console.log(util.inspect(parseResult, false, null, true));
       expect(parseResult).toStrictEqual(expected);
   })
 })
+
+// console.log(util.inspect(parseResult, false, null, true));
