@@ -124,7 +124,7 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                     {
                         token = tokenList[tokenPos];
                         //case no else branch
-                        if(tokenPos >= tokenList.length || (token.type !== 'keyword' && token.data !== 'else'))
+                        if(tokenPos >= tokenList.length || (token.type !== 'keyword' || token.data !== 'else'))
                         {
                             return [{class: 'IfStmt', condition : condition, trueBranch : ifBranch}, tokenPos];
                         }
@@ -167,7 +167,7 @@ export const parseWhileStmt = (tokenList, tokenPos) => {
                     [body, tokenPos] = parseStmt(tokenList, tokenPos + 1);
                     if(body !== null)
                     {
-                        return [{class : 'WhileStmt', condition : condition, body : body}, tokenPos + 1]
+                        return [{class : 'WhileStmt', condition : condition, body : body}, tokenPos]
                     }
                     else throw new ParseError('while statement body not found');
                 }

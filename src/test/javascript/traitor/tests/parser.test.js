@@ -519,12 +519,73 @@ describe('Exp Parsing Test', () => {
 })
 
 describe('Stmt Parsing Test', () => {
+  it('Testing if, while, break, print, block, return, exp statements', () => {
+    const test = 'while(5) {if (false) break; else { let x : Int = 4; x = 8;}} println(5); return 5; 432;';
+    const tokens = tokenize(test);
+    const parseRes = parse(tokens);
+    //console.log(util.inspect(parseRes, false, null, true));
+    const expected = 
+    {
+      class: 'Program',
+      programItems: [],
+      stmts: [
+        {
+          class: 'WhileStmt',
+          condition: { class: 'IntLitExp', value: 5 },
+          body: {
+            class: 'BlockStmt',
+            stmtList: [
+              {
+                class: 'IfElseStmt',
+                condition: { class: 'FalseExp' },
+                trueBranch: { class: 'BreakStmt' },
+                falseBranch: {
+                  class: 'BlockStmt',
+                  stmtList: [
+                    {
+                      class: 'LetStmt',
+                      param: {
+                        class: 'Param',
+                        varName: 'x',
+                        type: { class: 'IntType' }
+                      },
+                      exp: { class: 'IntLitExp', value: 4 }
+                    },
+                    {
+                      class: 'VarStmt',
+                      varName: 'x',
+                      exp: { class: 'IntLitExp', value: 8 }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        { class: 'PrintlnStmt', exp: { class: 'IntLitExp', value: 5 } },
+        { class: 'ReturnExpStmt', exp: { class: 'IntLitExp', value: 5 } },
+        { class: 'ExpStmt', exp: { class: 'IntLitExp', value: 432 } }
+      ]
+    };
+    expect(parseRes).toStrictEqual(expected);
+  })
+
+  it('Testing if error', () => {
+    const test = 'if(';
+    const tokens = tokenize(test);
+    try 
+    {
+      parse(tokens);
+    } catch (err)
+    {
+      expect(err).toStrictEqual(new ParseError('Missing if statement condition'))
+    }
+  })
 })
 
 // console.log(util.inspect(parseRes, false, null, true));
 
 describe('Program Parsing Test', () => {
-  var pos = 0;
   it('Testing program_items followed by stmt', () => {
       const test = 'struct s {} trait t { } impl t1 for Void {} func foo () : Int { return 5; } { x = 7;}';
       const tokens = tokenize(test);
