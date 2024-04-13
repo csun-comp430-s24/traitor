@@ -3,6 +3,7 @@ import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
 import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
 import ParseError from "../../../../main/javascript/traitor/parser/parseError.js";
+import parse from "../../../../main/javascript/traitor/parser/parser.js"
 import * as util from 'util';
 
 describe('Type Parsing Test', () => {
