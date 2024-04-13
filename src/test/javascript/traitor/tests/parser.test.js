@@ -186,6 +186,24 @@ describe('Def Parsing Test', () => {
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(4);
     })
+    it('Testing param with missing :', () => {
+      const test = "struct myStruct {param1 Int}";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseStructDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `:` on Param'));
+      }
+    })
+    it('Testing param with missing type', () => {
+      const test = "struct myStruct {param1 :";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseStructDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing Type On Param'));
+      }
+    })
     it('Testing trait definition', () => {
         const test = "trait Addable { method print(): Void; method add(a:Int, b:Int): Int; }";
         const tokens = tokenize(test);
@@ -216,6 +234,54 @@ describe('Def Parsing Test', () => {
           }
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(25);
+    })
+    it('Testing trait definition with no methods', () => {
+      const test = "trait Addable {}";
+      const tokens = tokenize(test);
+      const [parseResult, pos] = parseTraitDef(tokens, 0);
+      const expected = {
+          class: 'TraitDef',
+          traitName: 'Addable',
+          absMethods: []
+        }
+      expect(parseResult).toStrictEqual(expected);
+      expect(pos).toStrictEqual(4);
+    })
+    it('Testing trait definition with missing traitname', () => {
+      const test = "trait {}";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing trait name on trait definition'));
+      }
+    })
+    it('Testing trait definition with missing right bracket', () => {
+      const test = "trait Addable {";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `}` on trait definition'));
+      }
+    })
+    it('Testing trait definition with missing left bracket', () => {
+      const test = "trait Addable";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `{` on trait definition'));
+      }
+    })
+    it('Testing abstract method with missing semicolon', () => {
+      const test = "trait Addable { method print() : Void }";
+      const tokens = tokenize(test);
+      try {
+        const [parseResult, pos] = parseTraitDef(tokens, 0);
+      } catch (err) {
+        expect(err).toStrictEqual(new ParseError('Missing `;` on abstract method definition'));
+      }
     })
     it('Testing impl definition', () => {
       const test = "impl Addable for Int { method add(other: Int): Int { return self + other; } }"
