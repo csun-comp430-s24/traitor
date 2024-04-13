@@ -1,6 +1,7 @@
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
 import { parseFuncDef, parseImplDef, parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
+import { parseStmt } from "../../../../main/javascript/traitor/parser/stmt.js";
 import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
 import ParseError from "../../../../main/javascript/traitor/parser/parseError.js";
 import parse from "../../../../main/javascript/traitor/parser/parser.js"
@@ -492,7 +493,6 @@ describe('Exp Parsing Test', () => {
         const test = "var1.var2.var3(1, 2, 3)()";
         const tokens = tokenize(test);
         const [parseResult, pos] = parseExp(tokens, 0);
-        // console.log(util.inspect(parseResult, false, null, true));
         const expected = {
             class: 'CallExp',
             call: {
@@ -699,6 +699,122 @@ describe('Stmt Parsing Test', () => {
     } catch (err)
     {
       expect(err).toStrictEqual(new ParseError('Missing if statement condition'))
+    }
+  })
+
+  it('Testing invalid statement', () => {
+    const test = 'for';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Not a valid statement'))
+    }
+  })
+  it('Testing missing semicolon in let statement', () => {
+    const test = 'let a : Int = 1';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `;` in let statement'))
+    }
+  })
+  it('Testing missing expression in let statement', () => {
+    const test = 'let a : Int =';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing expression in let statement'))
+    }
+  })
+  it('Testing missing single equal in let statement', () => {
+    const test = 'let a : Int';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `=` in let statement'))
+    }
+  })
+  it('Testing missing param in let statement', () => {
+    const test = 'let ';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing parameter after let keyword'))
+    }
+  })
+  it('Testing missing semicolon in var statement', () => {
+    const test = 'var1 = 1';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `;` in var statement'))
+    }
+  })
+  it('Testing missing expression in var statement', () => {
+    const test = 'var1 = ';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing expression in var statement'))
+    }
+  })
+  it('Testing missing single equal in var statement', () => {
+    const test = 'var1';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `=` in var statement'))
+    }
+  })
+  it('Testing if statement with no else', () => {
+    const test = 'if(true) a = 1;';
+    const tokens = tokenize(test);
+    const [res, pos] = parseStmt(tokens, 0);
+    const expected = {
+      class: 'IfStmt',
+      condition: { class: 'TrueExp' },
+      trueBranch: {
+        class: 'VarStmt',
+        varName: 'a',
+        exp: { class: 'IntLitExp', value: 1 }
+      }
+    }
+    expect(res).toStrictEqual(expected);
+    expect(pos).toStrictEqual(8);
+  })
+  it('Testing if else statement with missing else body', () => {
+    const test = 'if(true) a = 1; else ';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Else statement body not found'))
+    }
+  })
+  it('Testing if else statement with missing if body', () => {
+    const test = 'if(true)';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('If statement body not found'))
+    }
+  })
+  it('Testing if statement with missing right paren', () => {
+    const test = 'if(true';
+    const tokens = tokenize(test);
+    try {
+      parseStmt(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `)` in if statement'))
     }
   })
 })
