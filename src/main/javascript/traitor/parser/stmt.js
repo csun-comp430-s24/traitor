@@ -195,7 +195,7 @@ export const parseBreakStmt = (tokenList, tokenPos) => {
     return [null, tokenPos];
 }
 
-//`println` `(` exp `)`
+//`println` `(` exp `)` `;`
 export const parsePrintlnStmt = (tokenList, tokenPos) => {
     var token = tokenList[tokenPos];
     if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'println')
@@ -211,7 +211,12 @@ export const parsePrintlnStmt = (tokenList, tokenPos) => {
                 {
                     if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
                     {
-                        return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                        tokenPos++;
+                        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
+                        {
+                            return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                        }
+                        else throw new ParseError('missing semicolon in println statement');
                     }
                     else throw new ParseError('missing right paren in println statement');
                 }
