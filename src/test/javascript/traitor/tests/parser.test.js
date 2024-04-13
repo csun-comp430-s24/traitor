@@ -393,3 +393,178 @@ describe('Exp Parsing Test', () => {
       expect(pos).toStrictEqual(3);
     })
 })
+
+describe('Program Parsing Test', () => {
+  it('Testing program_items followed by stmt', () => {
+      const test = 'struct s = {} trait t { } impl t1 for Void {} func foo () : Int { return 5; } {print(5)}}';
+      const tokens = tokenize(test);
+      const [parseResult, pos] = parseExp(tokens, 0);
+      const expected = {
+        class: 'NotEqualsExp',
+        left: {
+          class: 'LessThanExp',
+          left: {
+            class: 'BinOpExp',
+            op: '-',
+            left: {
+              class: 'ParenExp',
+              exp: {
+                class: 'BinOpExp',
+                op: '+',
+                left: { class: 'IntLitExp', value: 1 },
+                right: { class: 'IntLitExp', value: 2 }
+              }
+            },
+            right: {
+              class: 'BinOpExp',
+              op: '*',
+              left: { class: 'IntLitExp', value: 3 },
+              right: { class: 'IntLitExp', value: 4 }
+            }
+          },
+          right: { class: 'IntLitExp', value: 2 }
+        },
+        right: {
+          class: 'LessThanExp',
+          left: { class: 'IntLitExp', value: 3 },
+          right: { class: 'IntLitExp', value: 4 }
+        }
+      }
+      // console.log(util.inspect(parseResult, false, null, true));
+      expect(parseResult).toStrictEqual(expected);
+      expect(pos).toStrictEqual(15);
+  })
+  it('Testing parsing invalid expression', () => {
+      const test = "=>";
+      const tokens = tokenize(test);
+      try {
+          const [parseResult, pos] = parseExp(tokens, 0);
+      }
+      catch (err) {
+          expect(err).toStrictEqual(new ParseError('Expected Expression, Received: =>'))
+      }
+  })
+  it('Testing parsing empty expression', () => {
+      const test = "";
+      const tokens = tokenize(test);
+      const [parseResult, pos] = parseExp(tokens, 0);
+      expect(parseResult).toStrictEqual(null);
+      expect(pos).toStrictEqual(0);
+  })
+  it('Testing parsing chained dot expressions and chained call expressions', () => {
+      const test = "var1.var2.var3(1, 2, 3)()";
+      const tokens = tokenize(test);
+      const [parseResult, pos] = parseExp(tokens, 0);
+      // console.log(util.inspect(parseResult, false, null, true));
+      const expected = {
+          class: 'CallExp',
+          call: {
+            class: 'CallExp',
+            call: {
+              class: 'DotExp',
+              primary: {
+                class: 'DotExp',
+                primary: { class: 'VarExp', name: 'var1' },
+                varName: 'var2'
+              },
+              varName: 'var3'
+            },
+            params: {
+              class: 'CommaExp',
+              list: [
+                { class: 'IntLitExp', value: 1 },
+                { class: 'IntLitExp', value: 2 },
+                { class: 'IntLitExp', value: 3 }
+              ]
+            }
+          },
+          params: { class: 'CommaExp', list: [] }
+        }
+      expect(parseResult).toStrictEqual(expected);
+      expect(pos).toStrictEqual(14);
+  })
+  it('Parsing new struct instantiation', () => {
+      const test = 'new IntWrapper { value1: 7, value2: true, value3: false, value4: self }';
+      const tokens = tokenize(test);
+      const [parseRes, pos] = parseExp(tokens, 0);
+      const expected = {
+        class: 'NewStructExp',
+        structName: 'IntWrapper',
+        params: {
+          class: 'StructParams',
+          list: [
+            {
+              class: 'StructParam',
+              varName: 'value1',
+              exp: { class: 'IntLitExp', value: 7 }
+            },
+            {
+              class: 'StructParam',
+              varName: 'value2',
+              exp: { class: 'TrueExp' }
+            },
+            {
+              class: 'StructParam',
+              varName: 'value3',
+              exp: { class: 'FalseExp' }
+            },
+            {
+              class: 'StructParam',
+              varName: 'value4',
+              exp: { class: 'SelfExp' }
+            }
+          ]
+        }
+      }
+      // console.log(util.inspect(parseRes, false, null, true));
+      expect(parseRes).toStrictEqual(expected);
+      expect(pos).toStrictEqual(19);
+  })
+  it('Testing missing right paren on paren exp', () => {
+    const test = '((1 + 2) * 3';
+    const tokens = tokenize(test);
+    try {
+      const [parseRes, pos] = parseExp(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing `)` In Parenthesized Expression'));
+    }
+  })
+  it('Testing missing expression on paren exp', () => {
+    const test = '(1 + 2) * ()';
+    const tokens = tokenize(test);
+    try {
+      const [parseRes, pos] = parseExp(tokens, 0);
+    } catch (err) {
+      expect(err).toStrictEqual(new ParseError('Missing Expression In Parenthesized Expression'));
+    }
+  })
+  it('Parsing new struct instantiation no params', () => {
+    const test = 'new IntWrapper {}';
+    const tokens = tokenize(test);
+    const [parseRes, pos] = parseExp(tokens, 0);
+    const expected = {
+      class: 'NewStructExp',
+      structName: 'IntWrapper',
+      params: {
+        class: 'StructParams',
+        list: []
+      }
+    }
+    // console.log(util.inspect(parseRes, false, null, true));
+    expect(parseRes).toStrictEqual(expected);
+    expect(pos).toStrictEqual(4);
+  })
+  it('Parsing double equals exp', () => {
+    const test = '2 == 2';
+    const tokens = tokenize(test);
+    const [parseRes, pos] = parseExp(tokens, 0);
+    const expected = {
+      class: 'DoubleEqualsExp',
+      left: { class: 'IntLitExp', value: 2 },
+      right: { class: 'IntLitExp', value: 2 }
+    }
+    // console.log(util.inspect(parseRes, false, null, true));
+    expect(parseRes).toStrictEqual(expected);
+    expect(pos).toStrictEqual(3);
+  })
+})
