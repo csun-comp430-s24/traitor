@@ -1,4 +1,4 @@
-import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
+import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
 import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
@@ -8,7 +8,7 @@ import * as util from 'util';
 describe('Type Parsing Test', () => {
     it('Testing super high order func', () => {
         const test = "(IntWrapper, (Void), () => Boolean) => () => (Int) => (Boolean) => (Self)";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         [parseResult, pos] = parseType(tokens, pos);
@@ -46,7 +46,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing wrong token in type parsing', () => {
         const test = "(IntWrapper, + Void)";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -58,7 +58,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing missing right paren in ParenType parsing', () => {
         const test = "(IntWrapper ";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -70,7 +70,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing missing right paren in FuncType parsing', () => {
         const test = "(Void, Int, Boolean";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -82,7 +82,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing missing right arrow in FuncType parsing', () => {
         const test = "(Int, Void)";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -94,7 +94,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing missing exit in FuncType parsing', () => {
         const test = "(Int) => ";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -106,7 +106,7 @@ describe('Type Parsing Test', () => {
     })
     it('Testing missing comma in comma type', () => {
         const test = "(Int Void)";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         var parseResult;
         var pos = 0;
         try { 
@@ -121,7 +121,7 @@ describe('Type Parsing Test', () => {
 describe('Def Parsing Test', () => {
     it('Testing struct definition', () => {
         const test = "struct myStruct {var1: Int, var2: Int}";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseStructDef(tokens, 0);
         const expected = {
             class: 'StructDef',
@@ -139,7 +139,7 @@ describe('Def Parsing Test', () => {
     })
     it('Testing missing right bracket from struct def', () => {
         const test = "struct myStruct {var1: Int, var2: Int";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
@@ -148,7 +148,7 @@ describe('Def Parsing Test', () => {
     })
     it('Testing missing comma from struct def params', () => {
         const test = "struct myStruct {var1: Int var2: Int}";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
@@ -157,7 +157,7 @@ describe('Def Parsing Test', () => {
     })
     it('Testing missing left bracket from struct def', () => {
         const test = "struct myStruct var1: Int, var2: Int}";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
@@ -166,7 +166,7 @@ describe('Def Parsing Test', () => {
     })
     it('Testing missing structname from struct def', () => {
         const test = "struct {var1: Int, var2: Int}";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         try {
             const [parseResult, pos] = parseStructDef(tokens, 0);
         } catch(err) {
@@ -175,7 +175,7 @@ describe('Def Parsing Test', () => {
     })
     it('Testing empty params from struct def', () => {
         const test = "struct myStruct {}";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseStructDef(tokens, 0);
         const expected = {
             class: 'StructDef',
@@ -187,12 +187,12 @@ describe('Def Parsing Test', () => {
     })
     it('Testing trait definition', () => {
         const test = "trait Addable { method print(): Void; method add(a:Int, b:Int): Int; }";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseTraitDef(tokens, 0);
         const expected = {
             class: 'TraitDef',
             traitName: 'Addable',
-            absMethodList: [
+            absMethods: [
               {
                 class: 'AbstractMethodDef',
                 methodName: 'print',
@@ -221,7 +221,7 @@ describe('Def Parsing Test', () => {
 describe('Exp Parsing Test', () => {
     it('Testing expression parsing with int literals', () => {
         const test = "(1 + 2) - 3 * 4 < 2 != 3 < 4";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseExp(tokens, 0);
         const expected = {
           class: 'NotEqualsExp',
@@ -260,7 +260,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Testing parsing invalid expression', () => {
         const test = "=>";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         try {
             const [parseResult, pos] = parseExp(tokens, 0);
         }
@@ -270,14 +270,14 @@ describe('Exp Parsing Test', () => {
     })
     it('Testing parsing empty expression', () => {
         const test = "";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseExp(tokens, 0);
         expect(parseResult).toStrictEqual(null);
         expect(pos).toStrictEqual(0);
     })
     it('Testing parsing chained dot expressions and chained call expressions', () => {
         const test = "var1.var2.var3(1, 2, 3)()";
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseResult, pos] = parseExp(tokens, 0);
         // console.log(util.inspect(parseResult, false, null, true));
         const expected = {
@@ -309,7 +309,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Parsing new struct instantiation', () => {
         const test = 'new IntWrapper { value1: 7, value2: true, value3: false, value4: self }';
-        const tokens = main(test);
+        const tokens = tokenize(test);
         const [parseRes, pos] = parseExp(tokens, 0);
         const expected = {
           class: 'NewStructExp',
@@ -346,7 +346,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Testing missing right paren on paren exp', () => {
       const test = '((1 + 2) * 3';
-      const tokens = main(test);
+      const tokens = tokenize(test);
       try {
         const [parseRes, pos] = parseExp(tokens, 0);
       } catch (err) {
@@ -355,7 +355,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Testing missing expression on paren exp', () => {
       const test = '(1 + 2) * ()';
-      const tokens = main(test);
+      const tokens = tokenize(test);
       try {
         const [parseRes, pos] = parseExp(tokens, 0);
       } catch (err) {
@@ -364,7 +364,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Parsing new struct instantiation no params', () => {
       const test = 'new IntWrapper {}';
-      const tokens = main(test);
+      const tokens = tokenize(test);
       const [parseRes, pos] = parseExp(tokens, 0);
       const expected = {
         class: 'NewStructExp',
@@ -380,7 +380,7 @@ describe('Exp Parsing Test', () => {
     })
     it('Parsing double equals exp', () => {
       const test = '2 == 2';
-      const tokens = main(test);
+      const tokens = tokenize(test);
       const [parseRes, pos] = parseExp(tokens, 0);
       const expected = {
         class: 'DoubleEqualsExp',

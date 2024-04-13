@@ -2,7 +2,7 @@ import { parseImplDef, parseStructDef, parseTraitDef, parseFuncDef } from "./def
 import { parseStmt } from "./stmt";
 
 //structdef | traitdef | impldef | funcdef
-export const parseProgramItem = (tokenList, tokenPos) => {
+const parseProgramItem = (tokenList, tokenPos) => {
     var def;
     [def, tokenPos] = parseStructDef(tokenList, tokenPos);
     if(def !== null) return [def, tokenPos];
@@ -20,31 +20,31 @@ export const parseProgramItem = (tokenList, tokenPos) => {
 }
 
 //program_item* stmt*
-export const parseProgram = (tokenList) =>
+const parseProgram = (tokenList) =>
 {
     var tokenPos = 0;
-    var result = [];
+    var programItems = [], stmts = [];
 
     while(tokenPos < tokenList.length)
     {
         var program_item;
         [program_item, tokenPos] = parseProgramItem(tokenList, tokenPos);
         if(program_item === null) break;
-        result.push(program_item);
+        programItems.push(program_item);
     }
     while(tokenPos < tokenList.length)
     {
         var stmt;
         [stmt, tokenPos] = parseStmt(tokenList, tokenPos);
         if(stmt === null) break;
-        result.push(stmt);
+        stmts.push(stmt);
     }
 
-    return result;
+    return {class:'Program', programItems:programItems, stmts:stmts};
 }
 
-const main = (tokenList) => {
+const parse = (tokenList) => {
     return parseProgram(tokenList);
 }
 
-export default main;
+export default parse;

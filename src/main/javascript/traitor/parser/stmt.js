@@ -293,7 +293,7 @@ export const parseExpStmt = (tokenList, tokenPos) => {
 }
 
 // const test0 = 'while(true) {}'
-// const tokens0 = main(test0);
+// const tokens0 = tokenize(test0);
 // const [parseRes0, pos0] = parseWhileStmt(tokens0, 0);
 // console.log(util.inspect(parseRes0, false, null, true));
 //console.log(pos0);

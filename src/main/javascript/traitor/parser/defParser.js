@@ -302,7 +302,7 @@ export const parseFuncDef = (tokenList, tokenPos) => {
 
 /*
 const test = 'func var1 (p1 : Int, p2 : Int) : Int { let param1:Int = 1 + 1 ; }';
-const tokens = main(test);
+const tokens = tokenize(test);
 const [parseRes, pos] = parseFuncDef(tokens, 0);
 console.log(util.inspect(parseRes, false, null, true));
 console.log(pos);

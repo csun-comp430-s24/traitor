@@ -1,10 +1,10 @@
-import main from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
+import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import Token from "../../../../main/javascript/traitor/tokenizer/token.js";
 import TokenizerException from "../../../../main/javascript/traitor/tokenizer/tokenizeException.js";
 
 describe('Tokenizer Test', () => {
     it('Parsing dummy string', () => {
-        const result = main("some text, to test. : ");
+        const result = tokenize("some text, to test. : ");
         const expected = [
             new Token('variable', 'some'),
             new Token('variable', 'text'),
@@ -18,7 +18,7 @@ describe('Tokenizer Test', () => {
     })
     it('Parsing sample traitor code', () => {
         const data = "trait Addable {\n method add(other: Self): Self;\n}\ntrait Printable {\n method print(): Void;\n}\nstruct IntWrapper {\n value: Int\n}\nimpl Addable for Int {\nmethod add(other: Int): Int {\nreturn self + other;\n }\n}";
-        const result = main(data);
+        const result = tokenize(data);
         const expected = [                                                                                                                                                                             
             new Token('keyword', 'trait'), new Token('variable', 'Addable'), new Token('lBracket', '{'), new Token('keyword', 'method'),
             new Token('variable', 'add'), new Token('lParen', '('), new Token('variable', 'other'), new Token('colon', ':'),
@@ -40,7 +40,7 @@ describe('Tokenizer Test', () => {
     it('Parsing unacceptable data', () => {
         const data = "!!!";
         try { 
-            const result = main(data);
+            const result = tokenize(data);
             console.log(result);
         } catch(err) {
             expect(err).toStrictEqual(new TokenizerException('unacceptable token: !'));
@@ -48,7 +48,7 @@ describe('Tokenizer Test', () => {
     })
     it('Parsing keywords, integers, and evaluators', () => {
         const data = "let Int x x2 = 8 * 123 == => < !=";
-        const result = main(data);
+        const result = tokenize(data);
         const expected = [                                                                                                                                                                             
             new Token('keyword', 'let'),
             new Token('typeKeyword', 'Int'),
@@ -67,7 +67,7 @@ describe('Tokenizer Test', () => {
     })
     it('Parsing empty string', () => {
         const data = "";
-        const result = main(data);
+        const result = tokenize(data);
         const expected = [];
         expect(result).toStrictEqual(expected);
     })

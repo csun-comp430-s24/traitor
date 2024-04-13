@@ -72,12 +72,12 @@ const getTable = () => {
     return table;
 }
 
-const main = (text) => {
+const tokenize = (text) => {
     const table = getTable();
     const file = text; // to be set to contents of code to be parsed
     return parseFile(table, file);
 }
 
-// console.log(main("some text, to test. : "));
+// console.log(tokenize("some text, to test. : "));
 
-export default main;
+export default tokenize;

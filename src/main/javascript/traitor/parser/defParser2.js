@@ -38,7 +38,7 @@ const parseAbsMethodDef = (tokenList, tokenPos) => {
 }
 
 const test = 'method var1 (p1 : Int) : Int;';
-const tokens = main(test);
+const tokens = tokenize(test);
 const [res, pos] = parseAbsMethodDef(tokens, 0);
 // console.log(util.inspect(res, false, null, true));
 // console.log(pos);
