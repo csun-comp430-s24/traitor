@@ -1,6 +1,6 @@
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import parseType from "../../../../main/javascript/traitor/parser/typeParser.js"
-import { parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
+import { parseFuncDef, parseImplDef, parseStructDef, parseTraitDef } from "../../../../main/javascript/traitor/parser/defParser.js";
 import parseExp from "../../../../main/javascript/traitor/parser/expParser.js";
 import ParseError from "../../../../main/javascript/traitor/parser/parseError.js";
 import parse from "../../../../main/javascript/traitor/parser/parser.js"
@@ -217,6 +217,64 @@ describe('Def Parsing Test', () => {
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(25);
     })
+    it('Testing impl definition', () => {
+      const test = "impl Addable for Int { method add(other: Int): Int { return self + other; } }"
+      const tokens = tokenize(test);
+      const [res, pos] = parseImplDef(tokens, 0);
+      const expected = {
+        class: 'ImplDef',
+        traitName: 'Addable',
+        type: { class: 'IntType' },
+        concMethods: [
+          {
+            class: 'ConcreteMethodDef',
+            methodName: 'add',
+            params: {
+              class: 'CommaParam',
+              list: [
+                {
+                  class: 'Param',
+                  varName: 'other',
+                  type: { class: 'IntType' }
+                }
+              ]
+            },
+            type: { class: 'IntType' },
+            stmts: [
+              {
+                class: 'ReturnExpStmt',
+                exp: {
+                  class: 'BinOpExp',
+                  op: '+',
+                  left: { class: 'SelfExp' },
+                  right: { class: 'VarExp', name: 'other' }
+                }
+              }
+            ]
+          }
+        ]
+      }
+      expect(res).toStrictEqual(expected);
+      expect(pos).toStrictEqual(22);
+    })
+    it('Testing function definition', () => {
+      const test = "func var1 ( p : Int ) : Int { return 5; }";
+      const tokens = tokenize(test);
+      const [res, pos] = parseFuncDef(tokens, 0);
+      // console.log(util.inspect(res, false, null, true));
+      const expected = {
+        class: 'FuncDef',
+        varName: 'var1',
+        params: {
+          class: 'CommaParam',
+          list: [ { class: 'Param', varName: 'p', type: { class: 'IntType' } } ]
+        },
+        type: { class: 'IntType' },
+        stmts: [ { class: 'ReturnExpStmt', exp: { class: 'IntLitExp', value: 5 } } ]
+      }
+      expect(res).toStrictEqual(expected);
+      expect(pos).toStrictEqual(14);
+    })
 })
 
 describe('Exp Parsing Test', () => {
@@ -393,6 +451,11 @@ describe('Exp Parsing Test', () => {
       expect(pos).toStrictEqual(3);
     })
 })
+
+describe('Stmt Parsing Test', () => {
+})
+
+// console.log(util.inspect(parseRes, false, null, true));
 
 describe('Program Parsing Test', () => {
   it('Testing program_items followed by stmt', () => {

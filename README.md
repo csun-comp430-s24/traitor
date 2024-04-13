@@ -47,7 +47,7 @@ stmt ::= `let` param `=` exp `;` |               // Variable declaration
          `if` `(` exp `)` stmt [`else` stmt] |   // if
          `while` `(` exp `)` stmt |              // while
          `break` `;` |                           // break
-         `println` `(` exp `)` |                 // Printing something
+         `println` `(` exp `)` `;` |             // Printing something
          `{` stmt* `}` |                         // Block
          `return` [exp] `;` |                    // Return
          exp `;`                                 // Expression statements

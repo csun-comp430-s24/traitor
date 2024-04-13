@@ -201,29 +201,26 @@ export const parsePrintlnStmt = (tokenList, tokenPos) => {
     if (tokenPos < tokenList.length && token.type === 'keyword' && token.data === 'println')
     {
         tokenPos++;
-        if(tokenPos < tokenList.length)
+        if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'lParen')
         {
-            if(tokenList[tokenPos].type === 'lParen')
+            var exp;
+            [exp, tokenPos] = parseExp(tokenList, tokenPos + 1);
+            if(exp !== null)
             {
-                var exp;
-                [exp, tokenPos] = parseExp(tokenList, tokenPos + 1);
-                if(exp !== null)
-                {
-                    if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
+                if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'rParen')
                     {
                         tokenPos++;
                         if(tokenPos < tokenList.length && tokenList[tokenPos].type === 'semicolon')
-                        {
-                            return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
+                    {
+                        return [{class : 'PrintlnStmt', exp : exp}, tokenPos + 1];
                         }
                         else throw new ParseError('missing semicolon in println statement');
-                    }
-                    else throw new ParseError('missing right paren in println statement');
                 }
-                else throw new ParseError('println missing expression');
+                else throw new ParseError('missing right paren in println statement');
             }
-            else throw new ParseError('missing left paren in println statement');
+            else throw new ParseError('println missing expression');
         }
+        else throw new ParseError('missing left paren in println statement');
     }
     return [null, tokenPos];
 }
