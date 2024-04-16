@@ -126,7 +126,7 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                         //case no else branch
                         if(tokenPos >= tokenList.length || (token.type !== 'keyword' || token.data !== 'else'))
                         {
-                            return [{class: 'IfStmt', condition : condition, trueBranch : ifBranch}, tokenPos];
+                            return [{class:'IfStmt', condition:condition, trueBranch:ifBranch}, tokenPos];
                         }
 
                         //case where has an else
@@ -134,7 +134,7 @@ export const parseIfStmt = (tokenList, tokenPos) => {
                         [elseBranch, tokenPos] = parseStmt(tokenList, tokenPos + 1);
                         if(elseBranch !== null)
                         {
-                            return [{class: 'IfElseStmt', condition : condition, trueBranch : ifBranch, falseBranch : elseBranch}, tokenPos];
+                            return [{class:'IfElseStmt', condition:condition, trueBranch:ifBranch, falseBranch:elseBranch}, tokenPos];
                         }
                         else throw new ParseError('Else statement body not found');
                     }

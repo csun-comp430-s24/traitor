@@ -19,7 +19,7 @@ const parseBuiltIn = (tokenList, tokenPos) => {
         }
     }
     else if (token.type == 'variable') {
-        return [{class:'StructType', name:token.data}, tokenPos+1];
+        return [{class:'StructType', structName:token.data}, tokenPos+1];
     }
     else if (token.type == 'lParen' || token.type == 'rParen' || token.type == 'rightArrow' || token.type == 'comma') {
         return [null, tokenPos];
@@ -37,7 +37,7 @@ const parseParenType = (tokenList, tokenPos) => {
         // No need to check if type object exists in paren because parseFunc only passes to parseParen when there is exactly one type object in the paren
         token = tokenList[tokenPos];
         if (tokenPos < tokenList.length && token.type == 'rParen') {
-            return [{class:'ParenType', value:parseResult}, tokenPos+1];
+            return [{class:'ParenType', type:parseResult}, tokenPos+1];
         }
         else {
             throw new ParseError('No Right Paren On ParenType');
@@ -78,7 +78,7 @@ const parseFunctionType = (tokenList, tokenPos) => {
             if (tokenPos < tokenList.length && token.type == 'rightArrow') {
                 [outParseResult, tokenPos] = parseType(tokenList, tokenPos+1);
                 if (outParseResult != null) {
-                    return [{class:'FuncType', in:inParseResult, out:outParseResult}, tokenPos];
+                    return [{class:'FuncType', paramTypes:inParseResult, outputType:outParseResult}, tokenPos];
                 }
                 else throw new ParseError('No Exit On FuncType');
             }
