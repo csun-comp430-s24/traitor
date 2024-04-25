@@ -17,7 +17,6 @@ type ::=
   `Self` |                       // Refers to our own type in a trait
   structname |                   // Structs are a valid kind of type
   `(` type `)` |                 // Parenthesized type
-  `(` comma_type `)` `=>` type   // Higher-order function
 
 param ::= var `:` type
 
@@ -84,6 +83,9 @@ exp ::= equals_exp
 program_item ::= structdef | traitdef | impldef | funcdef
 
 program ::= program_item* stmt*      // stmt* is the entry point
+
+
+Note: We removed higher order function types because the grammar was missing an expression definition for higher order functions
 ```
 ## Example Code
 ```
