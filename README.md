@@ -16,7 +16,7 @@ type ::=
   `Int` | `Void` | `Boolean` |   // Built-in types
   `Self` |                       // Refers to our own type in a trait
   structname |                   // Structs are a valid kind of type
-  `(` type `)` |                 // Parenthesized type
+  `(` type `)`                   // Parenthesized type
 
 param ::= var `:` type
 
