@@ -1,5 +1,5 @@
 # Traitor
- A Haskell-like language featuring typeclasses, function overloading, and higher-order functions, which compiles to JavaScript.
+ A Haskell-like language featuring typeclasses and function overloading which compiles to JavaScript.
 
 >Programmers: Nick Sercel, Kobi Sherman, Justin Reyes
 
