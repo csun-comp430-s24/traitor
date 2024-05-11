@@ -1,0 +1,1 @@
+import { typecheck } from "../../../../main/javascript/typechecker/typechecker";
