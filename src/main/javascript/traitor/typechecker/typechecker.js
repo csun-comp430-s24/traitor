@@ -5,33 +5,76 @@ import {
     RedeclarationError,
     UndeclaredError,
 
-} from "./errors";
+} from "./errors.js";
+import * as util from 'util';
 
 const defSet = new Set();
-const itemMap = {}
+const structs = {} // basically a class
+const traits = {} // contains methods
+const impls = {} // applies a trait to a struct and gives definition of how
+const functions = {}
 
 function parseItem(item) {
     const className = item.class;
-    const itemObj = {
-        className
-    };
-    let name;
     if (className === 'StructDef') {
-        name = item.structName;
+        const name = item.structName;
+        if (defSet.has(name)) {
+            throw new ItemError("Item has been declared twice with name: " + name);
+        }
+        defSet.add(name);
+
+        structs[name] = {}
+        item.params.list.forEach((param) => {
+            structs[name][param.varName] = param.type.class
+        })
     } else if (className === 'TraitDef') {
-        name = item.traitName;
+        const name = item.traitName;
+        if (defSet.has(name)) {
+            throw new ItemError("Item has been declared twice with name: " + name);
+        }
+        defSet.add(name);
+
+        traits[name] = {}
+        item.absMethods.forEach((method) => {
+            traits[name][method.methodName] = {}
+            traits[name][method.methodName].returnType = method.type.class;
+            traits[name][method.methodName].inputs = [];
+            method.params.list.forEach((param) => {
+                traits[name][method.methodName].inputs[param.varName] = param.type.class;
+            })
+        })
     } else if (className === 'ImplDef') {
-        name = item.traitName;
+        let name = item.traitName
+        if (item.type.class === 'StructType') {
+            name += item.type.structName
+        } else {
+            name += item.type.class;
+        }
+        impls[name] = {}
+        impls[name].forType = item.type.class;
+        impls[name].methods = {}
+        item.concMethods.forEach((method) => {
+            impls[name].methods[method.methodName] = {};
+            const temp = impls[name].methods[method.methodName];
+            temp.returnType = method.type.class;
+            temp.statements = method.stmts
+            temp.inputs = {}
+            method.params.list.forEach((param) => {
+                temp.inputs[param.varName] = param.type.class;
+            })
+        })
     } else if (className === 'FuncDef') {
-        name = item.varName;
+        const name = item.functionName; // idk
+        functions[name] = {}
+        functions[name].inputs = {}
+        functions[name].statements = {}
+        functions[name].returnType = item.type.class;
+        item.params.list.forEach((param) => {
+            functions[name].inputs[param.varName] = param.type;
+        })
     } else {
         throw new ItemError("Item has invalid class name: " + className);
     }
-    if (defSet.has(name)) {
-        throw new ItemError("Item has been declared twice with name: " + name);
-    }
-    defSet.add(name);
-    itemMap[name] = itemObj;
 }
 
 function testCondition(className, value, varMap) {
@@ -131,13 +174,20 @@ function parseStatement(statement, varMap) {
 }
 
 
-export function typecheck({items, statements}) {
-    items.forEach((item) => {
+export function typecheck({programItems, stmts}) {
+    programItems.forEach((item) => {
         parseItem(item);
     })
 
-    statements.forEach((statement) => {
+    stmts.forEach((statement) => {
         parseStatement(statement);
     })
-    return true;
+
+    return {
+        traits,
+        structs,
+        impls,
+        functions,
+    };
 }
+

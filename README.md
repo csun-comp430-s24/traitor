@@ -1,9 +1,11 @@
 # Traitor
- A Haskell-like language featuring typeclasses and function overloading which compiles to JavaScript.
 
->Programmers: Nick Sercel, Kobi Sherman, Justin Reyes
+A Haskell-like language featuring typeclasses and function overloading which compiles to JavaScript.
+
+> Programmers: Nick Sercel, Kobi Sherman, Justin Reyes
 
 ## Concrete Syntax
+
 ```
 var is a variable
 structname is the name of a struct
@@ -87,7 +89,9 @@ program ::= program_item* stmt*      // stmt* is the entry point
 
 Note: We removed higher order function types because the grammar was missing an expression definition for higher order functions
 ```
+
 ## Example Code
+
 ```
 trait Addable {
  method add(other: Self): Self;
@@ -132,7 +136,9 @@ let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
 a3.print();
 a4.print();
 ```
+
 ## How To Run Tests
+
 ```
 Run `npm install jest` in terminal
 Run `npm test` to get test results and code coverage report

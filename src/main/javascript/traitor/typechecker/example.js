@@ -34,13 +34,3 @@ const expected = {
             }]
     }]
 }
-
-// stmt ::= `let` param `=` exp `;` |               // Variable declaration
-//          var `=` exp `;` |                       // Assignment
-//          `if` `(` exp `)` stmt [`else` stmt] |   // if
-//          `while` `(` exp `)` stmt |              // while
-//          `break` `;` |                           // break
-//          `println` `(` exp `)` `;` |             // Printing something
-//          `{` stmt* `}` |                         // Block
-//          `return` [exp] `;` |                    // Return
-//          exp `;`  
