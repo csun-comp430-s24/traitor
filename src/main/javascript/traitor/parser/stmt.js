@@ -9,6 +9,10 @@ export const parseStmt = (tokenList, tokenPos) => {
     if(tokenPos < tokenList.length)
     {
         var parseResult;
+
+        [parseResult, tokenPos] = parseExpStmt(tokenList, tokenPos);
+        if(parseResult !== null) return [parseResult, tokenPos];
+
         [parseResult, tokenPos] = parseLetStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
@@ -31,9 +35,6 @@ export const parseStmt = (tokenList, tokenPos) => {
         if(parseResult !== null) return [parseResult, tokenPos];
 
         [parseResult, tokenPos] = parseReturnStmt(tokenList, tokenPos);
-        if(parseResult !== null) return [parseResult, tokenPos];
-
-        [parseResult, tokenPos] = parseExpStmt(tokenList, tokenPos);
         if(parseResult !== null) return [parseResult, tokenPos];
 
         throw new ParseError('Not a valid statement');

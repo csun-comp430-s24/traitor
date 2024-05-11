@@ -53,7 +53,7 @@ const parse = (tokenList) => {
 export default parse;
 
 /*
-const test = 'impl Printable for IntWrapper { method print(): Void { return; } } let a1: Int = 5;';
+const test = 'a3.print();';
 const tokens = tokenize(test);
 const res = parseProgram(tokens);
 console.log(util.inspect(res, false, null, true));
