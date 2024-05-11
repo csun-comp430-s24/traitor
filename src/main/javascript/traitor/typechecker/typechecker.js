@@ -11,7 +11,7 @@ import * as util from 'util';
 const defSet = new Set();
 const structs = {} // basically a class
 const traits = {} // contains methods
-const impls = {} // applies a trait to a struct and gives definition of how
+const impls = [] // applies a trait to a struct and gives definition of how
 const functions = {}
 
 function parseItem(item) {
@@ -44,18 +44,22 @@ function parseItem(item) {
             })
         })
     } else if (className === 'ImplDef') {
-        let name = item.traitName
+        // let name = item.traitName
+        // if (item.type.class === 'StructType') {
+        //     name += item.type.structName
+        // } else {
+        //     name += item.type.class;
+        // }
+        impls.push({});
         if (item.type.class === 'StructType') {
-            name += item.type.structName
+            impls[impls.length-1].forType = item.type.structName;
         } else {
-            name += item.type.class;
+            impls[impls.length-1].forType = item.type.class;
         }
-        impls[name] = {}
-        impls[name].forType = item.type.class;
-        impls[name].methods = {}
+        impls[impls.length-1].methods = {}
         item.concMethods.forEach((method) => {
-            impls[name].methods[method.methodName] = {};
-            const temp = impls[name].methods[method.methodName];
+            impls[impls.length-1].methods[method.methodName] = {};
+            const temp = impls[impls.length-1].methods[method.methodName];
             temp.returnType = method.type.class;
             temp.statements = method.stmts
             temp.inputs = {}
@@ -104,38 +108,59 @@ function getExpType(exp, varMap, type) {
     } else if (exp.class === 'SelfExp') {
         return type;
     } else if (exp.class === 'IntLitExp') {
-        if (!(exp.value instanceof Number)) {
-            throw new Error();
+        if (Number.isNaN(exp.value)) {
+            console.log(util.inspect(exp, false, null, true /* enable colors */));
+            throw new Error("IntLitExp found with value not a number:");
         }
         return 'IntType';
     } else if (exp.class === 'TrueExp' || exp.class === 'FalseExp') {
         return 'BooleanType';
+    } else if (exp.class === 'NewStructExp') {
+        return exp.structName;
+    } else if (exp.class === 'CallExp') {
+        console.log(util.inspect(exp, false, null, true /* enable colors */));
+        console.log(util.inspect(varMap[exp.call.primary.name], false, null, true /* enable colors */));
+        // const dataType = structs[]
+        // impls.forEach((impl) => {
+        //     if (impl.forType === '') {
+
+        //     }
+        // })
+    } else {
+        console.log(util.inspect(exp, false, null, true /* enable colors */));
+        throw new Error("Missing class for expression");
     }
 }
 
-function parseStatement(statement, varMap) {
+function getParamType(type) {
+    if (type.class === 'StructType') {
+        return type.structName;
+    }
+    return type.class;
+}
+
+function parseStatement(statement, varMap = {}) {
+    console.log("varMap:", varMap);
+    // console.log("Evaluating statement:", statement);
     const className = statement.class;
     if (className == 'LetStmt') {
         if (statement.param.varName in varMap) {
             throw new RedeclarationError("Variable", statement.varName, "has already been declared");
         }
-        if (getExpType(statement.exp) != statement.param.type.class) {
-            throw new ConditionError("Attempted assigning type of", statement.param.type.class, "a value of", statement.exp.value)
+        const type = getExpType(statement.exp);
+        if (getExpType(statement.exp) != getParamType(statement.param.type)) {
+            throw new ConditionError("Attempted assigning type of", type, "a new type of", getParamType(statement.param.type))
         }
-        varMap[statement.param.varName] = {
-            class: statement.param.type.class,
-            value: statement.exp.value
-        };
+        varMap[statement.param.varName] = type;
         return varMap;
     } else if (className === 'VarStmt') {
         if (notDeclared(statement.varName, varMap)) {
             throw new UndeclaredError("Variable assigned to before declaration:", statement)
         }
         const expType = getExpType(statement.exp);
-        if (expType != varMap[statement.varName].class) {
-            throw new ConditionError("Attempted assigning type of", expType, "to variable of type", varMap[statement.varName].class)
+        if (expType != varMap[statement.varName]) {
+            throw new ConditionError("Attempted assigning type of", expType, "to variable of type", varMap[statement.varName])
         }
-        varMap[statement.varName].value = statement.exp.value; // not needed but for fun
         return varMap;
     } else if (className === 'IfStmt') {
         parseStatement(statement.condition, varMap);
@@ -175,12 +200,13 @@ function parseStatement(statement, varMap) {
 
 
 export function typecheck({programItems, stmts}) {
+    let varMap = {};
     programItems.forEach((item) => {
         parseItem(item);
     })
 
     stmts.forEach((statement) => {
-        parseStatement(statement);
+        varMap = parseStatement(statement, varMap);
     })
 
     return {

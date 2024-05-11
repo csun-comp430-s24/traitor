@@ -46,6 +46,8 @@ let a1: Int = 5;
 let a2: IntWrapper = new IntWrapper { value: 7 };
 let a3: Int = a1.add(2);
 let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
+a3.print();
+a4.print();
 `
 const tokens = tokenize(text);
 const parsed = parse(tokens);
