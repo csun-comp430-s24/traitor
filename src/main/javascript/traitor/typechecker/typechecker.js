@@ -161,21 +161,21 @@ function parseStatement(statement, varMap = {}) {
     const className = statement.class;
     if (className == 'LetStmt') {
         if (statement.param.varName in varMap) {
-            throw new RedeclarationError("Variable", statement.varName, "has already been declared");
+            throw new RedeclarationError("Variable " + statement.param.varName + " has already been declared");
         }
         const type = getExpType(statement.exp, varMap);
         if (type != getParamType(statement.param.type)) {
-            throw new ConditionError("Attempted assigning type of", type, "a new type of", getParamType(statement.param.type))
+            throw new ConditionError("Attempted assigning type of " + type + " a new type of " + getParamType(statement.param.type))
         }
         varMap[statement.param.varName] = type;
         return varMap;
     } else if (className === 'VarStmt') {
-        if (notDeclared(statement.varName, varMap)) {
-            throw new UndeclaredError("Variable assigned to before declaration:", statement)
+        if (!(statement.varName in varMap)) {
+            throw new UndeclaredError("Variable assigned to before declaration: " + statement.varName)
         }
         const expType = getExpType(statement.exp, varMap);
         if (expType != varMap[statement.varName]) {
-            throw new ConditionError("Attempted assigning type of", expType, "to variable of type", varMap[statement.varName])
+            throw new ConditionError("Attempted assigning type of " + expType + " to variable of type " + varMap[statement.varName])
         }
         return varMap;
     } else if (className === 'IfStmt') {
@@ -210,7 +210,7 @@ function parseStatement(statement, varMap = {}) {
         const conditionType = getExpType(statement.exp, varMap);
         return varMap;
     } else {
-        throw new TypeError("Invalid statement:", statement);
+        throw new TypeError("Invalid statement: " + statement);
     }
 }
 

@@ -290,6 +290,9 @@ export const parseExpStmt = (tokenList, tokenPos) => {
         {
             return [{class : 'ExpStmt', exp : exp}, tokenPos + 1];
         }
+        else if (exp.class === 'VarExp') {
+            return [null, tokenPos - 1];
+        }
         else throw new ParseError('Missing `;` on expression statement');
     }
     return [null, tokenPos];
