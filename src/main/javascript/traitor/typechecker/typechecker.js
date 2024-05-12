@@ -19,7 +19,7 @@ function parseItem(item) {
     if (className === 'StructDef') {
         const name = item.structName;
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared twice with name: " + name);
+            throw new ItemError("Item has been declared twice with name: `" + name + "`");
         }
         defSet.add(name);
 
@@ -30,7 +30,7 @@ function parseItem(item) {
     } else if (className === 'TraitDef') {
         const name = item.traitName;
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared twice with name: " + name);
+            throw new ItemError("Item has been declared twice with name: `" + name + "`");
         }
         defSet.add(name);
 
@@ -68,7 +68,7 @@ function parseItem(item) {
             })
         })
     } else if (className === 'FuncDef') {
-        const name = item.functionName; // idk
+        const name = item.varName;
         functions[name] = {}
         functions[name].inputs = {}
         functions[name].statements = {}
@@ -161,11 +161,11 @@ function parseStatement(statement, varMap = {}) {
     const className = statement.class;
     if (className == 'LetStmt') {
         if (statement.param.varName in varMap) {
-            throw new RedeclarationError("Variable " + statement.param.varName + " has already been declared");
+            throw new RedeclarationError("Variable `" + statement.param.varName + "` has already been declared");
         }
         const type = getExpType(statement.exp, varMap);
         if (type != getParamType(statement.param.type)) {
-            throw new ConditionError("Attempted assigning type of " + type + " a new type of " + getParamType(statement.param.type))
+            throw new ConditionError("Attempted assigning type of " + type + " to variable `" + statement.varName + "` a new type of " + getParamType(statement.param.type))
         }
         varMap[statement.param.varName] = type;
         return varMap;
@@ -175,7 +175,7 @@ function parseStatement(statement, varMap = {}) {
         }
         const expType = getExpType(statement.exp, varMap);
         if (expType != varMap[statement.varName]) {
-            throw new ConditionError("Attempted assigning type of " + expType + " to variable of type " + varMap[statement.varName])
+            throw new ConditionError("Attempted assigning type of " + expType + " to variable `" + statement.varName + "` of type " + varMap[statement.varName])
         }
         return varMap;
     } else if (className === 'IfStmt') {

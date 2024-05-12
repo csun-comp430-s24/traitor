@@ -25,6 +25,8 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
             }
         case 'rParen':
             return [null, tokenPos];
+        case 'lBracket':
+            return [null, tokenPos];
         default:
             break;
     }

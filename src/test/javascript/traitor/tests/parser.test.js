@@ -15,33 +15,34 @@ describe('Type Parsing Test', () => {
         var pos = 0;
         [parseResult, pos] = parseType(tokens, pos);
         const expected = {
-            class: 'FuncType',
-            in: {
-              class: 'CommaType',
-              list: [
-                { class: 'StructType', name: 'IntWrapper' },
-                { class: 'ParenType', value: { class: 'VoidType' } },
-                {
-                  class: 'FuncType',
-                  in: { class: 'CommaType', list: [] },
-                  out: { class: 'BooleanType' }
-                }
-              ]
-            },
-            out: {
-              class: 'FuncType',
-              in: { class: 'CommaType', list: [] },
-              out: {
+          class: 'FuncType',
+          paramTypes: {
+            class: 'CommaType',
+            list: [
+              { class: 'StructType', structName: 'IntWrapper' },
+              { class: 'ParenType', type: { class: 'VoidType' } },
+              {
                 class: 'FuncType',
-                in: { class: 'CommaType', list: [ { class: 'IntType' } ] },
-                out: {
-                  class: 'FuncType',
-                  in: { class: 'CommaType', list: [ { class: 'BooleanType' } ] },
-                  out: { class: 'ParenType', value: { class: 'SelfType' } }
-                }
+                paramTypes: { class: 'CommaType', list: [] },
+                outputType: { class: 'BooleanType' }
+              }
+            ]
+          },
+          outputType: {
+            class: 'FuncType',
+            paramTypes: { class: 'CommaType', list: [] },
+            outputType: {
+              class: 'FuncType',
+              paramTypes: { class: 'CommaType', list: [ { class: 'IntType' } ] },
+              outputType: {
+                class: 'FuncType',
+                paramTypes: { class: 'CommaType', list: [ { class: 'BooleanType' } ] },
+                outputType: { class: 'ParenType', type: { class: 'SelfType' } }
               }
             }
           }
+        }
+        // console.log(util.inspect(parseResult, false, null, true));
         expect(parseResult).toStrictEqual(expected);
         expect(pos).toStrictEqual(27);
     })
