@@ -51,11 +51,15 @@ describe('Typechecker Test', () => {
         let a2: IntWrapper = new IntWrapper { value: 7 };
         let a3: Int = a1.add(2);
         let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
+        let a5: Boolean = true;
         a3.print();
         a4.print();
         1 + 2;
         return 3;
         { a4.print(); }
+        if ( a5 == true ) a5 = false;
+        a1 < a3;
+        a2 != a4;
         `
         const tokens = tokenize(text);
         const parsed = parse(tokens);
@@ -64,7 +68,7 @@ describe('Typechecker Test', () => {
         // console.log(util.inspect(typecheck(parsed), false, null, true /* enable colors */));
 
         const expected = {
-            Variables: { a1: 'IntType', a2: 'IntWrapper', a3: 'IntType', a4: 'IntWrapper' }
+            Variables: { a1: 'IntType', a2: 'IntWrapper', a3: 'IntType', a4: 'IntWrapper', a5: 'BooleanType' }
           }
         expect(vars).toStrictEqual(expected);
     })

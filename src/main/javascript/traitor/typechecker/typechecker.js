@@ -147,6 +147,21 @@ function getExpType(exp, varMap, type) {
         return method.returnType === 'StructType' ? impl.forType : method.returnType;
     } else if (exp.class === 'DotExp') {
         
+    } else if (exp.class === 'DoubleEqualsExp') {
+        const left = getExpType(exp.left, varMap);
+        const right = getExpType(exp.right, varMap);
+        if (left === right) return left;
+        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+    } else if (exp.class === 'NotEqualsExp') {
+        const left = getExpType(exp.left, varMap);
+        const right = getExpType(exp.right, varMap);
+        if (left === right) return left;
+        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+    } else if (exp.class === 'LessThanExp') {
+        const left = getExpType(exp.left, varMap);
+        const right = getExpType(exp.right, varMap);
+        if (left === right) return left;
+        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
     } else {
         console.log(util.inspect(exp, false, null, true /* enable colors */));
         throw new Error("Missing class for expression");
@@ -184,11 +199,11 @@ function parseStatement(statement, varMap = {}) {
         }
         return varMap;
     } else if (className === 'IfStmt') {
-        parseStatement(statement.condition, varMap);
+        const expType = getExpType(statement.condition, varMap);
         parseStatement(statement.trueBranch, varMap);
         return varMap;
     } else if (className === 'IfElseStmt') {
-        parseStatement(statement.condition, varMap);
+        const expType = getExpType(statement.condition, varMap);
         parseStatement(statement.trueBranch, varMap);
         parseStatement(statement.falseBranch, varMap);
         return varMap;
