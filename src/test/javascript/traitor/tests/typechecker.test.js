@@ -53,6 +53,9 @@ describe('Typechecker Test', () => {
         let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
         a3.print();
         a4.print();
+        1 + 2;
+        return 3;
+        { a4.print(); }
         `
         const tokens = tokenize(text);
         const parsed = parse(tokens);
@@ -113,6 +116,16 @@ describe('Typechecker Test', () => {
             const vars = typecheck(ast)
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Variable assigned to before declaration: a"));
+        }
+    })
+    it('Variable exp with undeclared variable', () => {
+        const data = "a;";
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens)
+            const vars = typecheck(ast)
+        } catch(err) {
+            expect(err).toStrictEqual(new UndeclaredError("Variable `a` has not been declared"));
         }
     })
 });

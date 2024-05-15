@@ -76,11 +76,14 @@ function parseItem(item) {
         item.params.list.forEach((param) => {
             functions[name].inputs[param.varName] = param.type;
         })
-    } else {
-        throw new ItemError("Item has invalid class name: " + className);
     }
+    // This else statement would be a parser problem 
+    // else {             
+    //    throw new ItemError("Item has invalid class name: " + className);
+    // }
 }
 
+/* This function isn't used
 function testCondition(className, value, varMap) {
     if (className === 'IntType') {
         if (!(value instanceof Number))
@@ -93,27 +96,29 @@ function testCondition(className, value, varMap) {
             throw new Error();
     }
 }
+*/
 
 // type is only relevant for SelfExp which is from items only
 function getExpType(exp, varMap, type) {
     if (exp.class === 'BinOpExp') {
         const left = getExpType(exp.left, varMap, type)
         if (left != getExpType(exp.right, varMap, type)) {
-            throw new Error('bin op left and right dont agree');
+            throw new Error('Bin op left and right dont agree');
         }
         return left;
     } else if (exp.class === 'VarExp') {
         if (exp.name in varMap){
             return varMap[exp.name];
         }
-        throw new Error('var not found in map');
+        throw new UndeclaredError('Variable `' + exp.name + '` has not been declared');
     } else if (exp.class === 'SelfExp') {
         return type;
     } else if (exp.class === 'IntLitExp') {
-        if (Number.isNaN(exp.value)) {
-            // console.log(util.inspect(exp, false, null, true /* enable colors */));
-            throw new Error("IntLitExp found with value not a number:");
-        }
+        // This if statement is a tokenizer problem
+        // if (Number.isNaN(exp.value)) {               
+        //     // console.log(util.inspect(exp, false, null, true /* enable colors */));
+        //     throw new Error("IntLitExp found with value not a number:");
+        // }
         return 'IntType';
     } else if (exp.class === 'TrueExp' || exp.class === 'FalseExp') {
         return 'BooleanType';
@@ -203,7 +208,7 @@ function parseStatement(statement, varMap = {}) {
             varMap = parseStatement(stmt, varMap);
         })
         return varMap;
-    } else if (className === 'ReturnStmt') {
+    } else if (className === 'ReturnExpStmt') {
         const conditionType = getExpType(statement.exp, varMap);
         return varMap;
     } else if (className === 'ExpStmt') {
