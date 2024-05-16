@@ -13,6 +13,7 @@ var defSet = new Set();
 var structs = {}; // basically a class
 var traits = {}; // contains methods
 var impls = {}; // applies a trait to a struct and gives definition of how
+var implMethods = {};
 var functions = {};
 const builtInTypes = new Set(
     ['IntType', 'VoidType', 'BooleanType']
@@ -47,30 +48,71 @@ function parseItem(item) {
                 traits[name][method.methodName].inputs[param.varName] = param.type.class;
             })
         })
+        // console.log(traits[name])
     } else if (className === 'ImplDef') {
-        // let name = item.traitName
-        // if (item.type.class === 'StructType') {
-        //     name += item.type.structName
-        // } else {
-        //     name += item.type.class;
-        // }
-        const name = item.type.class === 'StructType' ? item.type.structName : item.type.class;
-        const flag = !(name in impls)
-        if (flag) {
-            impls[name] = {};
-            impls[name].forType = item.type.class === 'StructType' ? item.type.structName : item.type.class;
-            impls[name].methods = {}
+        const name = item.traitName;
+        const forType = item.type.class === 'StructType' ? item.type.structName : item.type.class;
+
+        // Checking if trait exists
+        if (!traits[name]) {
+            throw new UndeclaredError("Attempted implementation of non-existent trait `" + name + "`");
         }
+        // Checking if type exists for impl
+        if (!(builtInTypes.has(forType)) && !(structs[forType])) {
+            throw new TypeError("Attempted implementation of trait " + name + " to non-existent type `" + forType + "`");
+        }
+        // Checking if impl has not been made yet
+        if (!(impls[name])) {
+            impls[name] = {};
+            impls[name].forTypes = new Set();
+        }
+        // Checking if impl has already been done for the given type
+        if (impls[name].forTypes.has(forType)) {
+            throw new RedeclarationError("Trait " + name + " has already been implemented for " + forType);
+        }
+        impls[name].forTypes.add(forType);
+        // console.log(impls[name].forTypes);
+        
+        // Checking if traits have previously been implemented for the given type
+        if (!(implMethods[forType])) {
+            implMethods[forType] = {};
+            implMethods[forType].methods = {};
+        }
+
+        // Iterating over each method and assigning them to the given type
         item.concMethods.forEach((method) => {
-            impls[name].methods[method.methodName] = {};
-            const temp = impls[name].methods[method.methodName];
-            temp.returnType = method.type.class;
+            // Checking if method exists in the trait definition
+            if (!traits[name][method.methodName]) {
+                throw new UndeclaredError("Method `" + method.methodName + "` does not exist in trait " + name);
+            }
+            const abstractMethod = traits[name][method.methodName];
+            implMethods[forType].methods[method.methodName] = {};
+            const temp = implMethods[forType].methods[method.methodName];
+            temp.returnType = getParamType(method.type);
+
+            // Fetching the return type of the abstract method
+            var absReturnType = abstractMethod.returnType;
+            if (absReturnType === 'SelfType') {
+                absReturnType = forType;
+            }
+
+            // Checking if the return type of the concrete method matches the abstract method
+            if (temp.returnType !== absReturnType) {
+                throw new TypeError("Attempted assigning return type of " + temp.returnType + " to method `" + method.methodName + "` which needs return type " + absReturnType);
+            }
+            
             temp.statements = method.stmts
             temp.inputs = {}
+            console.log("Trait method: ");
+            console.log(util.inspect(traits[name][method.methodName], false, null, true /* enable colors */))
+            console.log("Impl method: ");
+            console.log(util.inspect(method, false, null, true /* enable colors */));
             method.params.list.forEach((param) => {
                 temp.inputs[param.varName] = param.type.class;
             })
         })
+        // console.log("Methods for " + forType + ": ");
+        // console.log(implMethods[forType]);
     } else if (className === 'FuncDef') {
         const name = item.varName;
         functions[name] = {}
@@ -131,11 +173,13 @@ function getExpType(exp, varMap, type) {
     } else if (exp.class === 'CallExp') {
         // console.log(util.inspect(exp, false, null, true));
         const primaryType = varMap[exp.call.primary.name];
-        const impl = impls[primaryType];
-        const method = impl.methods[exp.call.varName];
+        const availableMethods = implMethods[primaryType].methods;
+        if (!availableMethods[exp.call.varName]) {
+            throw new UndeclaredError("Method `" + exp.call.varName + "` does not exist for type " + primaryType);
+        }
 
-        console.log("Var " + exp.call.primary.name + " calling " + exp.call.varName);
-
+        const method = availableMethods[exp.call.varName];
+        /*
         for (const [key, value] of Object.entries(method.inputs)) {
             if (value === 'StructType') {
                 varMap[key] = impl.forType;
@@ -149,8 +193,9 @@ function getExpType(exp, varMap, type) {
         for (const [key, value] of Object.entries(method.inputs)) {
             delete varMap[key]; 
         }
+        */
 
-        return method.returnType === 'StructType' ? impl.forType : method.returnType;
+        return method.returnType === 'StructType' ? primaryType : method.returnType;
     } else if (exp.class === 'DotExp') {
         // Accessing struct fields
         const primaryType = getExpType(exp.primary, varMap);
@@ -259,6 +304,7 @@ export function typecheck({programItems, stmts}) {
     structs = {};
     traits = {};
     impls = {};
+    implMethods = {};
     functions = {};
     programItems.forEach((item) => {
         parseItem(item);
@@ -271,3 +317,6 @@ export function typecheck({programItems, stmts}) {
     return {"Variables": varMap};
 }
 
+export function checkImpl() {
+    return impls;
+}

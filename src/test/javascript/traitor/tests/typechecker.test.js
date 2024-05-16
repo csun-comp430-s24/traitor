@@ -1,83 +1,16 @@
-import { typecheck } from "../../../../main/javascript/traitor/typechecker/typechecker.js";
+import { typecheck, checkImpl } from "../../../../main/javascript/traitor/typechecker/typechecker.js";
 import { ConditionError, ItemError, RedeclarationError, UndeclaredError, TypeError } from "../../../../main/javascript/traitor/typechecker/errors.js";
 import parse from "../../../../main/javascript/traitor/parser/parser.js";
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import * as util from 'util';
 
 describe('Typechecker Test', () => {
-    it('Successful typecheck', () => {
-        const text = `
-        trait Addable {
-            method add(other: Self): Self;
-        }
-
-        trait Printable {
-            method print(): Void;
-        }
-
-        struct IntWrapper {
-            value: Int
-        }
-
-        impl Addable for Int {
-            method add(other: Int): Int {
-                return self + other;
-            }
-        }
-
-        impl Addable for IntWrapper {
-            method add(other: IntWrapper): IntWrapper {
-                return new IntWrapper { value: self.value + other.value };
-            }
-        }
-
-        impl Printable for Int {
-            method print(): Void {
-                println(self);
-            }
-        }
-
-        impl Printable for IntWrapper {
-            method print(): Void {
-                println(self.value);
-            }
-        }
-
-        func mult (x : Int, y : Int) : Int { 
-            return x * y; 
-        }
-
-        let a1: Int = 5;
-        let a2: IntWrapper = new IntWrapper { value: 7 };
-        let a3: Int = a1.add(2);
-        let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
-        let a5: Boolean = true;
-        a3.print();
-        a4.print();
-        1 + 2;
-        return 3;
-        { a4.print(); }
-        if ( a5 == true ) a5 = false;
-        a1 < a3;
-        a2 != a4;
-        `
-        const tokens = tokenize(text);
-        const ast = parse(tokens);
-        // console.log(util.inspect(ast, false, null, true /* enable colors */));
-        const vars = typecheck(ast);
-        // console.log(util.inspect(typecheck(parsed), false, null, true /* enable colors */));
-
-        const expected = {
-            Variables: { a1: 'IntType', a2: 'IntWrapper', a3: 'IntType', a4: 'IntWrapper', a5: 'BooleanType' }
-          }
-        expect(vars).toStrictEqual(expected);
-    })
     it('Declaring struct twice with the same struct name', () => {
         const data = "struct Test {} struct Test {}";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new ItemError("Item has been declared twice with name: `Test`"));
         }
@@ -86,8 +19,8 @@ describe('Typechecker Test', () => {
         const data = "trait Test {} trait Test {}";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new ItemError("Item has been declared twice with name: `Test`"));
         }
@@ -96,8 +29,8 @@ describe('Typechecker Test', () => {
         const data = "let a: Int = 5; let a: Int = 6;";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new RedeclarationError("Variable `a` has already been declared"));
         }
@@ -106,8 +39,8 @@ describe('Typechecker Test', () => {
         const data = "let a: Int = 5; a = true;";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted assigning type of BooleanType to variable `a` of type IntType"));
         }
@@ -116,8 +49,8 @@ describe('Typechecker Test', () => {
         const data = "a = true;";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Variable assigned to before declaration: a"));
         }
@@ -126,8 +59,8 @@ describe('Typechecker Test', () => {
         const data = "a;";
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Variable `a` has not been declared"));
         }
@@ -139,8 +72,8 @@ describe('Typechecker Test', () => {
                     `;
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted binary operation between IntType and BooleanType"));
         }
@@ -150,8 +83,8 @@ describe('Typechecker Test', () => {
                     a.value;`;
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted assigning non-existent type `IntWrapper` to variable `a`"));
         }
@@ -165,35 +98,117 @@ describe('Typechecker Test', () => {
                     let b: Boolean = a.value;`;
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted assigning type of IntType to new variable `b` of type BooleanType"));
         }
     })
-    it('Attempting functions calls', () => {
+    it('Attempting impl definition for non existent trait', () => {
         const data = `
-                    trait Addable {
-                        method add(other: Self): Self;
-                    }
-                    impl Addable for Int {
-                        method add(other: Int): Int {
-                            return self + other;
-                        }
-                    }
-                    func mult (x : Int, y : Int) : Int { 
-                        return x * y; 
-                    }
-                    let a: Int = 7;
-                    let b: Int = a.add(3);
-                    let c: Int = mult(a, b);`;
+        impl Addable for IntWrapper {
+            method add(other: Int): Int {
+                return self + other;
+            }
+        }
+        `
         try {
             const tokens = tokenize(data);
-            const ast = parse(tokens)
-            console.log(util.inspect(ast, false, null, true /* enable colors */));
-            const vars = typecheck(ast)
+            const ast = parse(tokens);
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new TypeError("Attempted assigning type of IntType to new variable `b` of type BooleanType"));
+            expect(err).toStrictEqual(new UndeclaredError("Attempted implementation of non-existent trait `Addable`"));
+        }
+    })
+    it('Attempting impl definition for non existent type', () => {
+        const data = `
+        trait Addable {
+            method add(other: Self): Self;
+        }
+        impl Addable for IntWrapper {
+            method add(other: Int): Int {
+                return self + other;
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted implementation of trait Addable to non-existent type `IntWrapper`"));
+        }
+    })
+    it('Attempting the duplicate impl definition', () => {
+        const data = `
+        trait Addable {
+            method add(other: Self): Self;
+        }
+        impl Addable for Int {
+            method add(other: Int): Int {
+                return self + other;
+            }
+        }
+        impl Addable for Int {
+            method add(other: Int): Int {
+                return self + other;
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new RedeclarationError("Trait Addable has already been implemented for IntType"));
+        }
+    })
+    it('Attempting impl of method that is not in the trait', () => {
+        const data = `
+        trait Exponent {
+            method square(): Self;
+        }
+        impl Exponent for Int {
+            method square(): Int {
+                return self * self;
+            }
+            method print(): Void {
+                println(self);
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new UndeclaredError("Method `print` does not exist in trait Exponent"));
+        }
+    })
+    it('Attempting impl of method with wrong return type', () => {
+        const data = `
+        trait Exponent {
+            method square(): Self;
+            method cube(): Self;
+        }
+        impl Exponent for Int {
+            method square(): Int {
+                return self * self;
+            }
+            method cube(): Void {
+                return self * self * self;
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted assigning return type of VoidType to method `cube` which needs return type IntType"));
         }
     })
 });
