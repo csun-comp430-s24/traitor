@@ -62,9 +62,9 @@ describe('Typechecker Test', () => {
         a2 != a4;
         `
         const tokens = tokenize(text);
-        const parsed = parse(tokens);
-        // console.log(util.inspect(parsed, false, null, true /* enable colors */));
-        const vars = typecheck(parsed);
+        const ast = parse(tokens);
+        // console.log(util.inspect(ast, false, null, true /* enable colors */));
+        const vars = typecheck(ast);
         // console.log(util.inspect(typecheck(parsed), false, null, true /* enable colors */));
 
         const expected = {
@@ -109,7 +109,7 @@ describe('Typechecker Test', () => {
             const ast = parse(tokens)
             const vars = typecheck(ast)
         } catch(err) {
-            expect(err).toStrictEqual(new ConditionError("Attempted assigning type of BooleanType to variable `a` of type IntType"));
+            expect(err).toStrictEqual(new TypeError("Attempted assigning type of BooleanType to variable `a` of type IntType"));
         }
     })
     it('Assigning to a variable that was not declared', () => {
@@ -143,6 +143,57 @@ describe('Typechecker Test', () => {
             const vars = typecheck(ast)
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted binary operation between IntType and BooleanType"));
+        }
+    })
+    it('Attempting assigning a non existent type to a variable', () => {
+        const data = `let a: IntWrapper = new IntWrapper { value: 7 };
+                    a.value;`;
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens)
+            const vars = typecheck(ast)
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted assigning non-existent type `IntWrapper` to variable `a`"));
+        }
+    })
+    it('Attempting assigning wrong type to newly declared variable', () => {
+        const data = `
+                    struct IntWrapper {
+                        value: Int
+                    }
+                    let a: IntWrapper = new IntWrapper { value: 7 };
+                    let b: Boolean = a.value;`;
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens)
+            const vars = typecheck(ast)
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted assigning type of IntType to new variable `b` of type BooleanType"));
+        }
+    })
+    it('Attempting functions calls', () => {
+        const data = `
+                    trait Addable {
+                        method add(other: Self): Self;
+                    }
+                    impl Addable for Int {
+                        method add(other: Int): Int {
+                            return self + other;
+                        }
+                    }
+                    func mult (x : Int, y : Int) : Int { 
+                        return x * y; 
+                    }
+                    let a: Int = 7;
+                    let b: Int = a.add(3);
+                    let c: Int = mult(a, b);`;
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens)
+            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast)
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted assigning type of IntType to new variable `b` of type BooleanType"));
         }
     })
 });

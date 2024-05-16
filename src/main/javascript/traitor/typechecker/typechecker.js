@@ -1,3 +1,4 @@
+import { builtinModules } from "module";
 import {
     TypeError,
     ConditionError,
@@ -8,11 +9,14 @@ import {
 } from "./errors.js";
 import * as util from 'util';
 
-const defSet = new Set();
-const structs = {} // basically a class
-const traits = {} // contains methods
-const impls = {} // applies a trait to a struct and gives definition of how
-const functions = {}
+var defSet = new Set();
+var structs = {}; // basically a class
+var traits = {}; // contains methods
+var impls = {}; // applies a trait to a struct and gives definition of how
+var functions = {};
+const builtInTypes = new Set(
+    ['IntType', 'VoidType', 'BooleanType']
+)
 
 function parseItem(item) {
     const className = item.class;
@@ -128,7 +132,9 @@ function getExpType(exp, varMap, type) {
         // console.log(util.inspect(exp, false, null, true));
         const primaryType = varMap[exp.call.primary.name];
         const impl = impls[primaryType];
-        const method = impl.methods[exp.call.varName]
+        const method = impl.methods[exp.call.varName];
+
+        console.log("Var " + exp.call.primary.name + " calling " + exp.call.varName);
 
         for (const [key, value] of Object.entries(method.inputs)) {
             if (value === 'StructType') {
@@ -146,6 +152,15 @@ function getExpType(exp, varMap, type) {
 
         return method.returnType === 'StructType' ? impl.forType : method.returnType;
     } else if (exp.class === 'DotExp') {
+        // Accessing struct fields
+        const primaryType = getExpType(exp.primary, varMap);
+        if (structs[primaryType]) {
+            const variable = exp.varName;
+            // console.log(structs[primaryType]);
+            if (structs[primaryType][variable])
+                return structs[primaryType][variable];
+        }
+        // Accessing methods
         
     } else if (exp.class === 'DoubleEqualsExp') {
         const left = getExpType(exp.left, varMap);
@@ -184,8 +199,11 @@ function parseStatement(statement, varMap = {}) {
             throw new RedeclarationError("Variable `" + statement.param.varName + "` has already been declared");
         }
         const type = getExpType(statement.exp, varMap);
+        if (!(builtInTypes.has(type)) && !(structs[type])) {
+            throw new TypeError("Attempted assigning non-existent type `" + type + "`" + " to variable `" + statement.param.varName + "`")
+        }
         if (type != getParamType(statement.param.type)) {
-            throw new ConditionError("Attempted assigning type of " + type + " to variable `" + statement.varName + "` a new type of " + getParamType(statement.param.type))
+            throw new TypeError("Attempted assigning type of " + type + " to new variable `" + statement.param.varName + "` of type " + getParamType(statement.param.type))
         }
         varMap[statement.param.varName] = type;
         return varMap;
@@ -195,7 +213,7 @@ function parseStatement(statement, varMap = {}) {
         }
         const expType = getExpType(statement.exp, varMap);
         if (expType != varMap[statement.varName]) {
-            throw new ConditionError("Attempted assigning type of " + expType + " to variable `" + statement.varName + "` of type " + varMap[statement.varName])
+            throw new TypeError("Attempted assigning type of " + expType + " to variable `" + statement.varName + "` of type " + varMap[statement.varName])
         }
         return varMap;
     } else if (className === 'IfStmt') {
@@ -237,6 +255,11 @@ function parseStatement(statement, varMap = {}) {
 
 export function typecheck({programItems, stmts}) {
     let varMap = {};
+    defSet = new Set();
+    structs = {};
+    traits = {};
+    impls = {};
+    functions = {};
     programItems.forEach((item) => {
         parseItem(item);
     })
