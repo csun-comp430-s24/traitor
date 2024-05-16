@@ -1,5 +1,5 @@
 import { typecheck } from "../../../../main/javascript/traitor/typechecker/typechecker.js";
-import { ConditionError, ItemError, RedeclarationError, UndeclaredError, TypeError } from "../../../../main/javascript/traitor/typechecker/errors.js";
+import { RedeclarationError, UndeclaredError, TypeError } from "../../../../main/javascript/traitor/typechecker/errors.js";
 import parse from "../../../../main/javascript/traitor/parser/parser.js";
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import * as util from 'util';
@@ -12,7 +12,7 @@ describe('Typechecking Program Items Test', () => {
             const ast = parse(tokens);
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new ItemError("Item has been declared more than once with name: `Test`"));
+            expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `Test`"));
         }
     })
     it('Declaring struct with two parameters of the same name', () => {
@@ -36,7 +36,7 @@ describe('Typechecking Program Items Test', () => {
             const ast = parse(tokens);
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new ItemError("Item has been declared more than once with name: `Test`"));
+            expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `Test`"));
         }
     })
     it('Attempting impl definition for non existent trait', () => {
@@ -351,6 +351,24 @@ describe('Typechecking statements test', () => {
             expect(err).toStrictEqual(new TypeError("Expected param type IntType for method `mult`; instead received BooleanType"));
         }
     })
+    it('Attempting declaration of function with the same name and parameters', () => {
+        const data = `
+        func mult (a: Int, b: Int) : Int {
+            return 0;
+        }
+        func mult (a: Int, b: Int) : Int {
+            return 0;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `mult`"));
+        }
+    })
     it('Attempting comparison of different types', () => {
         const data1 = `
         let a: Int = 1;
@@ -363,7 +381,7 @@ describe('Typechecking statements test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new ConditionError("Cannot compare expression of type IntType to expression of type BooleanType"));
+            expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
         }
 
         const data2 = `
@@ -377,7 +395,7 @@ describe('Typechecking statements test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new ConditionError("Cannot compare expression of type IntType to expression of type BooleanType"));
+            expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
         }
 
         const data3 = `
@@ -391,7 +409,7 @@ describe('Typechecking statements test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new ConditionError("Cannot compare expression of type IntType to expression of type BooleanType"));
+            expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
         }
     })
 })
@@ -452,9 +470,14 @@ describe('Successful typecheck of sample program', () => {
         } else {
             a5 = true;
         }
-        if (a1 < a3) return;
+        while (a1 < a3) {
+            a1 = a1.add(1);
+            break;
+        }
         a1 < a3;
         a2 != a4;
+        println(a4);
+        if (a1 == a3) return;
         `
         const tokens = tokenize(data);
         const ast = parse(tokens);

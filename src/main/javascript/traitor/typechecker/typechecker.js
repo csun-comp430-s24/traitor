@@ -1,8 +1,6 @@
 import { builtinModules } from "module";
 import {
     TypeError,
-    ConditionError,
-    ItemError,
     RedeclarationError,
     UndeclaredError,
 
@@ -26,7 +24,7 @@ function parseItem(item) {
 
         // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared more than once with name: `" + name + "`");
+            throw new RedeclarationError("Item has been declared more than once with name: `" + name + "`");
         }
         defSet.add(name);
 
@@ -43,7 +41,7 @@ function parseItem(item) {
 
         // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared more than once with name: `" + name + "`");
+            throw new RedeclarationError("Item has been declared more than once with name: `" + name + "`");
         }
         defSet.add(name);
 
@@ -138,7 +136,7 @@ function parseItem(item) {
     }
     // This else statement would be a parser problem 
     // else {             
-    //    throw new ItemError("Item has invalid class name: " + className);
+    //    throw new RedeclarationError("Item has invalid class name: " + className);
     // }
 }
 
@@ -235,17 +233,17 @@ function getExpType(exp, varMap, type) {
         const left = getExpType(exp.left, varMap);
         const right = getExpType(exp.right, varMap);
         if (left === right) return left;
-        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+        throw new TypeError("Cannot compare expression of type " + left + " to expression of type " + right);
     } else if (exp.class === 'NotEqualsExp') {
         const left = getExpType(exp.left, varMap);
         const right = getExpType(exp.right, varMap);
         if (left === right) return left;
-        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+        throw new TypeError("Cannot compare expression of type " + left + " to expression of type " + right);
     } else if (exp.class === 'LessThanExp') {
         const left = getExpType(exp.left, varMap);
         const right = getExpType(exp.right, varMap);
         if (left === right) return left;
-        throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+        throw new TypeError("Cannot compare expression of type " + left + " to expression of type " + right);
     } else if (exp.class === 'ParenExp') {
         const type = getExpType(exp.exp, varMap);
         return type;
