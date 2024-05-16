@@ -23,19 +23,27 @@ function parseItem(item) {
     const className = item.class;
     if (className === 'StructDef') {
         const name = item.structName;
+
+        // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared twice with name: `" + name + "`");
+            throw new ItemError("Item has been declared more than once with name: `" + name + "`");
         }
         defSet.add(name);
 
-        structs[name] = {}
+        structs[name] = {};
         item.params.list.forEach((param) => {
+            // Checking if struct parameter has already been declared
+            if (structs[name][param.varName]) {
+                throw new RedeclarationError("Parameter `" + param.varName + "` has been declared more than once for struct `" + name + "`");
+            }
             structs[name][param.varName] = param.type.class
         })
     } else if (className === 'TraitDef') {
         const name = item.traitName;
+
+        // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
-            throw new ItemError("Item has been declared twice with name: `" + name + "`");
+            throw new ItemError("Item has been declared more than once with name: `" + name + "`");
         }
         defSet.add(name);
 
@@ -48,7 +56,6 @@ function parseItem(item) {
                 traits[name][method.methodName].inputs[param.varName] = param.type.class;
             })
         })
-        // console.log(traits[name])
     } else if (className === 'ImplDef') {
         const name = item.traitName;
         const forType = item.type.class === 'StructType' ? item.type.structName : item.type.class;
@@ -103,10 +110,11 @@ function parseItem(item) {
             
             temp.statements = method.stmts
             temp.inputs = {}
-            console.log("Trait method: ");
-            console.log(util.inspect(traits[name][method.methodName], false, null, true /* enable colors */))
-            console.log("Impl method: ");
-            console.log(util.inspect(method, false, null, true /* enable colors */));
+            // console.log("Trait method: ");
+            // console.log(util.inspect(traits[name][method.methodName], false, null, true /* enable colors */))
+            // console.log("Impl method: ");
+            // console.log(util.inspect(method, false, null, true /* enable colors */));
+
             method.params.list.forEach((param) => {
                 temp.inputs[param.varName] = param.type.class;
             })
@@ -115,6 +123,11 @@ function parseItem(item) {
         // console.log(implMethods[forType]);
     } else if (className === 'FuncDef') {
         const name = item.varName;
+        if (defSet.has(name)) {
+            throw new RedeclarationError("Item has been declared more than once with name: `" + name + "`");
+        }
+        defSet.add(name);
+
         functions[name] = {}
         functions[name].inputs = {}
         functions[name].statements = {}
@@ -129,21 +142,6 @@ function parseItem(item) {
     // }
 }
 
-/* This function isn't used
-function testCondition(className, value, varMap) {
-    if (className === 'IntType') {
-        if (!(value instanceof Number))
-            throw new Error();
-    } else if (className === 'BooleanType') {
-        if (!(value instanceof Boolean))
-            throw new Error();
-    } else if (className === 'Var') {
-        if (value in varMap)
-            throw new Error();
-    }
-}
-*/
-
 // type is only relevant for SelfExp which is from items only
 function getExpType(exp, varMap, type) {
     if (exp.class === 'BinOpExp') {
@@ -156,7 +154,7 @@ function getExpType(exp, varMap, type) {
         if (exp.name in varMap){
             return varMap[exp.name];
         }
-        throw new UndeclaredError('Variable `' + exp.name + '` has not been declared');
+        throw new UndeclaredError('`' + exp.name + '` is not defined');
     } else if (exp.class === 'SelfExp') {
         return type;
     } else if (exp.class === 'IntLitExp') {
@@ -172,13 +170,9 @@ function getExpType(exp, varMap, type) {
         return exp.structName;
     } else if (exp.class === 'CallExp') {
         // console.log(util.inspect(exp, false, null, true));
-        const primaryType = varMap[exp.call.primary.name];
-        const availableMethods = implMethods[primaryType].methods;
-        if (!availableMethods[exp.call.varName]) {
-            throw new UndeclaredError("Method `" + exp.call.varName + "` does not exist for type " + primaryType);
-        }
-
-        const method = availableMethods[exp.call.varName];
+        const returnType = getExpType(exp.call, varMap);
+        // console.log(util.inspect(exp.call, false, null, true));
+        // console.log({"Return type of method":returnType});
         /*
         for (const [key, value] of Object.entries(method.inputs)) {
             if (value === 'StructType') {
@@ -194,19 +188,31 @@ function getExpType(exp, varMap, type) {
             delete varMap[key]; 
         }
         */
-
-        return method.returnType === 'StructType' ? primaryType : method.returnType;
+        return returnType;
     } else if (exp.class === 'DotExp') {
-        // Accessing struct fields
+        const variable = exp.varName;
+
+        // Checking if type is struct or built-in
         const primaryType = getExpType(exp.primary, varMap);
-        if (structs[primaryType]) {
-            const variable = exp.varName;
-            // console.log(structs[primaryType]);
-            if (structs[primaryType][variable])
+        if (structs[primaryType] || builtInTypes.has(primaryType)) {
+            // Checking if type contains methods
+            if (implMethods[primaryType]) {
+                // Checking if method is accessible to type
+                if (implMethods[primaryType].methods[variable]) {
+                    const method = implMethods[primaryType].methods[variable];
+
+                    // Checking return type of method
+                    // console.log({"Method": method});
+                    return method.returnType;
+                }
+            }
+
+            // Accessing struct fields
+            if (structs[primaryType] && structs[primaryType][variable]) {
                 return structs[primaryType][variable];
+            }
+            throw new UndeclaredError("`" + variable + "` cannot be accessed by type " + primaryType);
         }
-        // Accessing methods
-        
     } else if (exp.class === 'DoubleEqualsExp') {
         const left = getExpType(exp.left, varMap);
         const right = getExpType(exp.right, varMap);
@@ -222,6 +228,9 @@ function getExpType(exp, varMap, type) {
         const right = getExpType(exp.right, varMap);
         if (left === right) return left;
         throw new ConditionError("Cannot compare expression of type " + left + " to expression of type " + right);
+    } else if (exp.class === 'ParenExp') {
+        const type = getExpType(exp.exp, varMap);
+        return type;
     } else {
         console.log(util.inspect(exp, false, null, true /* enable colors */));
         throw new Error("Missing class for expression");
@@ -310,13 +319,15 @@ export function typecheck({programItems, stmts}) {
         parseItem(item);
     })
 
+    // Adding function names to varMap with return type
+    defSet.forEach((itemName) => {
+        if (functions[itemName])
+            varMap[itemName] = functions[itemName].returnType;
+    })
+
     stmts.forEach((statement) => {
         varMap = parseStatement(statement, varMap);
     })
 
     return {"Variables": varMap};
-}
-
-export function checkImpl() {
-    return impls;
 }
