@@ -73,7 +73,7 @@ describe('Typechecking Program Items Test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new TypeError("Attempted implementation of trait Addable to non-existent type `IntWrapper`"));
+            expect(err).toStrictEqual(new UndeclaredError("`IntWrapper` is not defined"));
         }
     })
     it('Attempting the duplicate impl definition', () => {

@@ -13,9 +13,6 @@ var traits = {}; // contains methods
 var impls = {}; // applies a trait to a struct and gives definition of how
 var implMethods = {};
 var functions = {};
-const builtInTypes = new Set(
-    ['IntType', 'VoidType', 'BooleanType']
-)
 
 function parseItem(item) {
     const className = item.class;
@@ -34,7 +31,7 @@ function parseItem(item) {
             if (structs[name][param.varName]) {
                 throw new RedeclarationError("Parameter `" + param.varName + "` has been declared more than once for struct `" + name + "`");
             }
-            structs[name][param.varName] = param.type.class
+            structs[name][param.varName] = getParamType(param.type);
         })
     } else if (className === 'TraitDef') {
         const name = item.traitName;
@@ -48,7 +45,7 @@ function parseItem(item) {
         traits[name] = {}
         item.absMethods.forEach((method) => {
             traits[name][method.methodName] = {}
-            traits[name][method.methodName].returnType = method.type.class;
+            traits[name][method.methodName].returnType = getParamType(method.type);
             traits[name][method.methodName].inputs = {};
             method.params.list.forEach((param) => {
                 traits[name][method.methodName].inputs[param.varName] = getParamType(param.type);
@@ -56,16 +53,14 @@ function parseItem(item) {
         })
     } else if (className === 'ImplDef') {
         const name = item.traitName;
-        const forType = item.type.class === 'StructType' ? item.type.structName : item.type.class;
 
         // Checking if trait exists
         if (!traits[name]) {
             throw new UndeclaredError("Attempted implementation of non-existent trait `" + name + "`");
         }
-        // Checking if type exists for impl
-        if (!(builtInTypes.has(forType)) && !(structs[forType])) {
-            throw new TypeError("Attempted implementation of trait " + name + " to non-existent type `" + forType + "`");
-        }
+        
+        const forType = getParamType(item.type);
+
         // Checking if impl has not been made yet
         if (!(impls[name])) {
             impls[name] = {};
@@ -129,7 +124,7 @@ function parseItem(item) {
         functions[name] = {}
         functions[name].inputs = {}
         functions[name].statements = {}
-        functions[name].returnType = item.type.class;
+        functions[name].returnType = getParamType(item.type);
         item.params.list.forEach((param) => {
             functions[name].inputs[param.varName] = getParamType(param.type);
         })
@@ -208,27 +203,26 @@ function getExpType(exp, varMap, type) {
     } else if (exp.class === 'DotExp') {
         const variable = exp.varName;
 
-        // Checking if type is struct or built-in
+        // Getting type of primary
         const primaryType = getExpType(exp.primary, varMap);
-        if (structs[primaryType] || builtInTypes.has(primaryType)) {
-            // Checking if type contains methods
-            if (implMethods[primaryType]) {
-                // Checking if method is accessible to type
-                if (implMethods[primaryType].methods[variable]) {
-                    const method = implMethods[primaryType].methods[variable];
 
-                    // Checking return type of method
-                    // console.log({"Method": method});
-                    return method.returnType;
-                }
-            }
+        // Checking if type contains methods
+        if (implMethods[primaryType]) {
+            // Checking if method is accessible to type
+            if (implMethods[primaryType].methods[variable]) {
+                const method = implMethods[primaryType].methods[variable];
 
-            // Accessing struct fields and checking parameter type
-            if (structs[primaryType] && structs[primaryType][variable]) {
-                return structs[primaryType][variable];
+                // Checking return type of method
+                // console.log({"Method": method});
+                return method.returnType;
             }
-            throw new UndeclaredError("`" + variable + "` cannot be accessed by type " + primaryType);
         }
+
+        // Accessing struct fields and checking parameter type
+        if (structs[primaryType] && structs[primaryType][variable]) {
+            return structs[primaryType][variable];
+        }
+        throw new UndeclaredError("`" + variable + "` cannot be accessed by type " + primaryType);
     } else if (exp.class === 'DoubleEqualsExp') {
         const left = getExpType(exp.left, varMap);
         const right = getExpType(exp.right, varMap);
