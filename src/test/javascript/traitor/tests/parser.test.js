@@ -358,12 +358,12 @@ describe('Def Parsing Test', () => {
                   class: 'BinOpExp',
                   op: '+',
                   left: { class: 'SelfExp' },
-                  right: { class: 'VarExp', name: 'other' }
+                  right: { class: 'VarExp', varName: 'other' }
                 }
               },
               {
                 class: 'ReturnExpStmt',
-                exp: { class: 'VarExp', name: 'var1' }
+                exp: { class: 'VarExp', varName: 'var1' }
               }
             ]
           },
@@ -502,7 +502,7 @@ describe('Exp Parsing Test', () => {
                 class: 'DotExp',
                 primary: {
                   class: 'DotExp',
-                  primary: { class: 'VarExp', name: 'var1' },
+                  primary: { class: 'VarExp', varName: 'var1' },
                   varName: 'var2'
                 },
                 varName: 'var3'

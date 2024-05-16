@@ -51,9 +51,9 @@ function parseItem(item) {
         item.absMethods.forEach((method) => {
             traits[name][method.methodName] = {}
             traits[name][method.methodName].returnType = method.type.class;
-            traits[name][method.methodName].inputs = [];
+            traits[name][method.methodName].inputs = {};
             method.params.list.forEach((param) => {
-                traits[name][method.methodName].inputs[param.varName] = param.type.class;
+                traits[name][method.methodName].inputs[param.varName] = getParamType(param.type);
             })
         })
     } else if (className === 'ImplDef') {
@@ -116,7 +116,7 @@ function parseItem(item) {
             // console.log(util.inspect(method, false, null, true /* enable colors */));
 
             method.params.list.forEach((param) => {
-                temp.inputs[param.varName] = param.type.class;
+                temp.inputs[param.varName] = getParamType(param.type);
             })
         })
         // console.log("Methods for " + forType + ": ");
@@ -133,7 +133,7 @@ function parseItem(item) {
         functions[name].statements = {}
         functions[name].returnType = item.type.class;
         item.params.list.forEach((param) => {
-            functions[name].inputs[param.varName] = param.type;
+            functions[name].inputs[param.varName] = getParamType(param.type);
         })
     }
     // This else statement would be a parser problem 
@@ -151,10 +151,10 @@ function getExpType(exp, varMap, type) {
         }
         return left;
     } else if (exp.class === 'VarExp') {
-        if (exp.name in varMap){
-            return varMap[exp.name];
+        if (exp.varName in varMap){
+            return varMap[exp.varName];
         }
-        throw new UndeclaredError('`' + exp.name + '` is not defined');
+        throw new UndeclaredError('`' + exp.varName + '` is not defined');
     } else if (exp.class === 'SelfExp') {
         return type;
     } else if (exp.class === 'IntLitExp') {
@@ -167,27 +167,45 @@ function getExpType(exp, varMap, type) {
     } else if (exp.class === 'TrueExp' || exp.class === 'FalseExp') {
         return 'BooleanType';
     } else if (exp.class === 'NewStructExp') {
+        if (!structs[exp.structName]) {
+            throw new UndeclaredError("`" + exp.structName + "` is not defined");
+        }
         return exp.structName;
     } else if (exp.class === 'CallExp') {
         // console.log(util.inspect(exp, false, null, true));
         const returnType = getExpType(exp.call, varMap);
-        // console.log(util.inspect(exp.call, false, null, true));
-        // console.log({"Return type of method":returnType});
-        /*
-        for (const [key, value] of Object.entries(method.inputs)) {
-            if (value === 'StructType') {
-                varMap[key] = impl.forType;
-            } else {
-                varMap[key] = value;
+        const methodName = exp.call.varName;
+        const receivedParams = exp.params.list;
+        var expectedParams;
+
+        // console.log({"Method called":methodName});
+
+        // Checking if method is from an impl
+        if (exp.call.class === 'DotExp') {
+            const primaryType = getExpType(exp.call.primary, varMap);
+            // console.log(util.inspect({"Expected Params":implMethods[primaryType].methods[methodName].inputs}, false, null, true));
+            expectedParams = implMethods[primaryType].methods[methodName].inputs;
+        }
+
+        // Checking if method is a func
+        if (exp.call.class === 'VarExp') {
+            // console.log(util.inspect({"Expected Params":functions[methodName].inputs}, false, null, true));
+            expectedParams = functions[methodName].inputs;
+        }
+
+        var accum = 0;
+        for (const [key, value] of Object.entries(expectedParams)) {
+            const expectedParamType = value;
+            const receivedParamType = getExpType(receivedParams[accum]);
+            // console.log({"Expected Param Type": expectedParamType});
+            // console.log({"Received Param Type": receivedParamType});
+            if (expectedParamType !== receivedParamType) {
+                throw new TypeError("Expected param type " + expectedParamType + " for method `" + methodName + "`; instead received " + receivedParamType);
             }
+            accum += 1;
         }
-        method.statements.forEach((statement) => {
-            getExpType(statement.exp, varMap, primaryType);
-        })
-        for (const [key, value] of Object.entries(method.inputs)) {
-            delete varMap[key]; 
-        }
-        */
+        // console.log(util.inspect({"Call Params":exp.params.list}, false, null, true));
+
         return returnType;
     } else if (exp.class === 'DotExp') {
         const variable = exp.varName;
@@ -207,7 +225,7 @@ function getExpType(exp, varMap, type) {
                 }
             }
 
-            // Accessing struct fields
+            // Accessing struct fields and checking parameter type
             if (structs[primaryType] && structs[primaryType][variable]) {
                 return structs[primaryType][variable];
             }
@@ -232,13 +250,14 @@ function getExpType(exp, varMap, type) {
         const type = getExpType(exp.exp, varMap);
         return type;
     } else {
-        console.log(util.inspect(exp, false, null, true /* enable colors */));
-        throw new Error("Missing class for expression");
+        // console.log(util.inspect(exp, false, null, true /* enable colors */));
+        throw new Error("Missing class for expression" + exp.class);
     }
 }
 
 function getParamType(type) {
     if (type.class === 'StructType') {
+        if (!structs[type.structName]) throw new UndeclaredError("`" + type.structName + "` is not defined");
         return type.structName;
     }
     return type.class;
@@ -253,9 +272,6 @@ function parseStatement(statement, varMap = {}) {
             throw new RedeclarationError("Variable `" + statement.param.varName + "` has already been declared");
         }
         const type = getExpType(statement.exp, varMap);
-        if (!(builtInTypes.has(type)) && !(structs[type])) {
-            throw new TypeError("Attempted assigning non-existent type `" + type + "`" + " to variable `" + statement.param.varName + "`")
-        }
         if (type != getParamType(statement.param.type)) {
             throw new TypeError("Attempted assigning type of " + type + " to new variable `" + statement.param.varName + "` of type " + getParamType(statement.param.type))
         }
@@ -297,6 +313,8 @@ function parseStatement(statement, varMap = {}) {
         return varMap;
     } else if (className === 'ReturnExpStmt') {
         const conditionType = getExpType(statement.exp, varMap);
+        return varMap;
+    } else if (className === 'ReturnStmt') {
         return varMap;
     } else if (className === 'ExpStmt') {
         const conditionType = getExpType(statement.exp, varMap);

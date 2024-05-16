@@ -12,7 +12,7 @@ const parsePrimarySingle = (tokenList, tokenPos) => {
         case 'number':
             return [{class:'IntLitExp', value:parseInt(token.data)}, tokenPos + 1];
         case 'variable':
-            return [{class:'VarExp', name:token.data}, tokenPos + 1];
+            return [{class:'VarExp', varName:token.data}, tokenPos + 1];
         case 'keyword':
             if (token.data == 'true') {
                 return [{class:'TrueExp'}, tokenPos + 1];
