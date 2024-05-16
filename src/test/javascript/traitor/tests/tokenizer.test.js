@@ -43,7 +43,7 @@ describe('Tokenizer Test', () => {
             const result = tokenize(data);
             console.log(result);
         } catch(err) {
-            expect(err).toStrictEqual(new TokenizerException('unacceptable token: !'));
+            expect(err).toStrictEqual(new TokenizerException('Unacceptable token: !'));
         }
     })
     it('Parsing keywords, integers, and evaluators', () => {

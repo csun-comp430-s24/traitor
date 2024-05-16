@@ -103,7 +103,7 @@ function getExpType(exp, varMap, type) {
     if (exp.class === 'BinOpExp') {
         const left = getExpType(exp.left, varMap, type)
         if (left != getExpType(exp.right, varMap, type)) {
-            throw new Error('Bin op left and right dont agree');
+            throw new TypeError('Attempted binary operation between ' + left + ' and ' + getExpType(exp.right, varMap, type));
         }
         return left;
     } else if (exp.class === 'VarExp') {

@@ -1,5 +1,5 @@
 import { typecheck } from "../../../../main/javascript/traitor/typechecker/typechecker.js";
-import { ConditionError, ItemError, RedeclarationError, UndeclaredError } from "../../../../main/javascript/traitor/typechecker/errors.js";
+import { ConditionError, ItemError, RedeclarationError, UndeclaredError, TypeError } from "../../../../main/javascript/traitor/typechecker/errors.js";
 import parse from "../../../../main/javascript/traitor/parser/parser.js";
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import * as util from 'util';
@@ -130,6 +130,19 @@ describe('Typechecker Test', () => {
             const vars = typecheck(ast)
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Variable `a` has not been declared"));
+        }
+    })
+    it('Binary operation with mismatching expressions', () => {
+        const data = `let a: Int = 1;
+                    let b: Boolean = true;
+                    a + b;
+                    `;
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens)
+            const vars = typecheck(ast)
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted binary operation between IntType and BooleanType"));
         }
     })
 });
