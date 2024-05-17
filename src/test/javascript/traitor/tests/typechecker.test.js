@@ -50,7 +50,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Attempted implementation of non-existent trait `Addable`"));
@@ -70,7 +70,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("`IntWrapper` is not defined"));
@@ -95,7 +95,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new RedeclarationError("Trait Addable has already been implemented for IntType"));
@@ -210,7 +210,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Mismatch of return types in if/else statement; if returns type IntType; else returns type BooleanType"));
@@ -226,7 +226,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new RedeclarationError("Variable `a` has already been declared"));
@@ -241,7 +241,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Variable assigned to before declaration: a"));
@@ -257,7 +257,7 @@ describe('Typechecking Program Items Test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted assigning type of BooleanType to variable `a` of type IntType"));
@@ -393,7 +393,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("`sub` cannot be accessed by type IntType"));
@@ -407,7 +407,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("`add` cannot be accessed by type IntType"));
@@ -432,7 +432,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors */));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors */));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("Method `sub` does not exist for type IntType"));
@@ -448,7 +448,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Attempted assigning type of IntType to new variable `a` of type BooleanType"));
@@ -464,7 +464,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new UndeclaredError("`multIntTypeBooleanType` is not defined"));
@@ -482,7 +482,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `multIntTypeIntType`"));
@@ -497,7 +497,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data1);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
@@ -511,7 +511,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data2);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
@@ -525,7 +525,7 @@ describe('Typechecking statements test', () => {
         try {
             const tokens = tokenize(data3);
             const ast = parse(tokens);
-            // console.log(util.inspect(ast, false, null, true /* enable colors));
+            // // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
             expect(err).toStrictEqual(new TypeError("Cannot compare expression of type IntType to expression of type BooleanType"));
@@ -620,7 +620,7 @@ describe('Successful typecheck of arbitrary program handling most cases', () => 
         `
         const tokens = tokenize(data);
         const ast = parse(tokens);
-        // console.log(util.inspect(ast, false, null, true /* enable colors */));
+        // // console.log(util.inspect(ast, false, null, true /* enable colors */));
         const vars = typecheck(ast);
         const expected = {
             Variables: {
