@@ -1,3 +1,5 @@
+// This was an attempt at refactoring our parser; it is not used
+
 import ParseError from "./parseError.js"
 import { parseCommaParam } from "./defParser.js";
 import parseType from "./typeParser.js";
