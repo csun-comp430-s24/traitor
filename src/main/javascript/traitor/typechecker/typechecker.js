@@ -162,9 +162,23 @@ function getStatementReturnType(statement, varMap, type) {
     const className = statement.class;
     // console.log(statement);
     if (className == 'LetStmt') {
-        varMap[statement.param.varName] = getExpType(statement.exp, varMap, type);
+        if (statement.param.varName in varMap) {
+            throw new RedeclarationError("Variable `" + statement.param.varName + "` has already been declared");
+        }
+        const assignType = getExpType(statement.exp, varMap, type);
+        if (assignType != getParamType(statement.param.type)) {
+            throw new TypeError("Attempted assigning type of " + assignType + " to new variable `" + statement.param.varName + "` of type " + getParamType(statement.param.type))
+        }
+        varMap[statement.param.varName] = assignType;
         return 'VoidType'
     } else if (className === 'VarStmt') {
+        if (!(statement.varName in varMap)) {
+            throw new UndeclaredError("Variable assigned to before declaration: " + statement.varName)
+        }
+        const expType = getExpType(statement.exp, varMap);
+        if (expType != varMap[statement.varName]) {
+            throw new TypeError("Attempted assigning type of " + expType + " to variable `" + statement.varName + "` of type " + varMap[statement.varName])
+        }
         return 'VoidType'
     } else if (className === 'IfStmt') {
         return getStatementReturnType(statement.trueBranch, varMap);
