@@ -137,10 +137,9 @@ function parseItem(item) {
     }
 }
 
-function getStatementsReturnType(stmts)
+function getStatementsReturnType(stmts, varMap)
 {
     var returnType = 'VoidType';
-    var varMap = {};
     stmts.forEach((stmt) => {
         returnType = getStatementReturnType(stmt, varMap);
         if(returnType != 'VoidType') return returnType;
@@ -149,7 +148,7 @@ function getStatementsReturnType(stmts)
 }
 
 //assumes that statement has been typechecked for consistency already
-function getStatementReturnType(statement) {
+function getStatementReturnType(statement, varMap) {
     const className = statement.class;
     if (className == 'LetStmt') {
         varMap[statement.param] = getExpType(statement.exp, varMap);
@@ -169,6 +168,7 @@ function getStatementReturnType(statement) {
     } else if (className === 'BlockStmt') {
         getStatementsReturnType(statement.stmtList, varMap);
     } else if (className === 'ReturnExpStmt') {
+        console.log(statement);
         return getExpType(statement.exp, varMap);
     } else if (className === 'ReturnStmt') {
         return 'VoidType';
@@ -370,16 +370,24 @@ export function typecheck({programItems, stmts}) {
         if(item.class == 'ImplDef')
         {
             item.concMethods.forEach((method) => {
-                expectedType = method.type;
-                calculatedType = getStatementsReturnType(method.stmts);
-                if(expectedType != calculatedType) throw TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
+                const expectedType = getParamType(method.type);
+                const localVarMap = {};
+                method.params.list.forEach((param) => {
+                    localVarMap[param.varName] = getParamType(param.type);
+                })
+                const calculatedType = getStatementsReturnType(method.stmts, localVarMap);
+                if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
             })
         }
         else if(item.class == 'FuncDef')
         {
-            expectedType = item.type;
-            calculatedType = getStatementsReturnType(item.stmts);
-            if(expectedType != calculatedType) throw TypeError("Return Type mismatch in " + item.varName + " method. Expected " + expectedType + ", returning " + calculatedType);
+            const expectedType = getParamType(item.type);
+            const localVarMap = {};
+            item.params.list.forEach((param) => {
+                localVarMap[param.varName] = getParamType(param.type);
+            })
+            const calculatedType = getStatementsReturnType(item.stmts, localVarMap);
+            if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + item.varName + " method. Expected " + expectedType + ", returning " + calculatedType);
         }
     })
 
