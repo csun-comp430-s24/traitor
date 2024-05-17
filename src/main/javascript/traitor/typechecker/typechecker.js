@@ -119,7 +119,7 @@ function parseItem(item) {
 
             //check if statement types match the return type
             //method.type == method.stmts.
-            console.log(JSON.stringify(method));
+            console.log(util.inspect(method, false, null, true));
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
