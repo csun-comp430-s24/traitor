@@ -367,7 +367,7 @@ describe('Typechecking statements test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new TypeError("Expected param type IntType for method `mult`; instead received BooleanType"));
+            expect(err).toStrictEqual(new UndeclaredError("`multIntTypeBooleanType` is not defined"));
         }
     })
     it('Attempting declaration of function with the same name and parameters', () => {
@@ -385,7 +385,7 @@ describe('Typechecking statements test', () => {
             // console.log(util.inspect(ast, false, null, true /* enable colors));
             const vars = typecheck(ast);
         } catch(err) {
-            expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `mult`"));
+            expect(err).toStrictEqual(new RedeclarationError("Item has been declared more than once with name: `multIntTypeIntType`"));
         }
     })
     it('Attempting comparison of different types', () => {
@@ -450,6 +450,9 @@ describe('Successful typecheck of sample program', () => {
         
         impl Addable for Int {
             method add(other: Int): Int {
+                while (1) {
+                    break;
+                }
                 return self + other;
             }
         }
@@ -474,6 +477,21 @@ describe('Successful typecheck of sample program', () => {
         
         func mult (x : Int, y : Int) : Int { 
             return x * y; 
+        }
+
+        func mult (x : Int) : Int {
+            let a: Int = 1;
+            if (a == 1) {
+                a = 1;
+                while (false) {
+                    a = 0;
+                    break;
+                }
+            }
+            else {
+                a = 1;
+            }
+            return x * a;
         }
         
         let a1: Int = 5;
@@ -504,7 +522,8 @@ describe('Successful typecheck of sample program', () => {
         const vars = typecheck(ast);
         const expected = {
             Variables: {
-              mult: 'IntType',
+              multIntTypeIntType: 'IntType',
+              multIntType: "IntType",
               a1: 'IntType',
               a2: 'IntWrapper',
               a3: 'IntType',

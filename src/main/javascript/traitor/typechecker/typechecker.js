@@ -34,7 +34,7 @@ function parseItem(item) {
             }
             structs[name][param.varName] = getParamType(param.type);
         })
-        console.log(util.inspect({"structs:": structs}, false, null, true));
+        // console.log(util.inspect({"structs:": structs}, false, null, true));
     } else if (className === 'TraitDef') {
         let name = item.traitName;
 
@@ -53,10 +53,10 @@ function parseItem(item) {
                 traits[name][method.methodName].inputs[param.varName] = getParamType(param.type);
             })
         })
-        console.log(util.inspect({"traits:": traits}, false, null, true));
+        // (util.inspect({"traits:": traits}, false, null, true));
     } else if (className === 'ImplDef') {
         const name = item.traitName;
-        console.log(util.inspect({"ImplDef:": item}, false, null, true));
+        // console.log(util.inspect({"ImplDef:": item}, false, null, true));
 
         // Checking if trait exists
         if (!traits[name]) {
@@ -130,7 +130,7 @@ function parseItem(item) {
     } else if (className === 'FuncDef') {
         let name = item.varName;
         item.params.list.forEach((param) => {
-            name += param.type.class;
+            name += getParamType(param.type);
         })
         if (defSet.has(name)) {
             throw new RedeclarationError("Item has been declared more than once with name: `" + name + "`");
@@ -147,30 +147,31 @@ function parseItem(item) {
     }
 }
 
-function getStatementsReturnType(stmts, varMap)
+function getStatementsReturnType(stmts, varMap, type)
 {
     var returnType = 'VoidType';
     stmts.forEach((stmt) => {
-        returnType = getStatementReturnType(stmt, varMap);
+        returnType = getStatementReturnType(stmt, varMap, type);
         if(returnType != 'VoidType') return returnType;
     })
     return returnType;
 }
 
 //assumes that statement has been typechecked for consistency already
-function getStatementReturnType(statement, varMap) {
+function getStatementReturnType(statement, varMap, type) {
     const className = statement.class;
+    // console.log(statement);
     if (className == 'LetStmt') {
-        varMap[statement.param] = getExpType(statement.exp, varMap);
+        varMap[statement.param.varName] = getExpType(statement.exp, varMap);
         return 'VoidType'
     } else if (className === 'VarStmt') {
         return 'VoidType'
     } else if (className === 'IfStmt') {
-        return getStatementType(statement.trueBranch, varMap);
+        return getStatementReturnType(statement.trueBranch, varMap);
     } else if (className === 'IfElseStmt') {
-        return getStatementType(statement.falseBranch, varMap); //assuming it is already checked for consistency
+        return getStatementReturnType(statement.falseBranch, varMap); //assuming it is already checked for consistency
     } else if (className === 'WhileStmt') {
-        return getStatementType(statement.body, varMap);
+        return getStatementReturnType(statement.body, varMap);
     } else if (className === 'BreakStmt') {
         return 'VoidType';
     } else if (className === 'PrintlnStmt') {
@@ -178,8 +179,7 @@ function getStatementReturnType(statement, varMap) {
     } else if (className === 'BlockStmt') {
         getStatementsReturnType(statement.stmtList, varMap);
     } else if (className === 'ReturnExpStmt') {
-        console.log(statement);
-        return getExpType(statement.exp, varMap);
+        return getExpType(statement.exp, varMap, type);
     } else if (className === 'ReturnStmt') {
         return 'VoidType';
     } else if (className === 'ExpStmt') {
@@ -198,6 +198,7 @@ function getExpType(exp, varMap, type) {
         }
         return left;
     } else if (exp.class === 'VarExp') {
+        // console.log(util.inspect(exp, false, null, true));
         if (exp.varName in varMap){
             return varMap[exp.varName];
         }
@@ -215,15 +216,16 @@ function getExpType(exp, varMap, type) {
         return exp.structName;
     } else if (exp.class === 'CallExp') {
         // console.log(util.inspect(exp, false, null, true));
-        const returnType = getExpType(exp.call, varMap);
         const methodName = exp.call.varName;
         const receivedParams = exp.params.list;
         var expectedParams;
+        var returnType;
 
         // console.log({"Method called":methodName});
 
         // Checking if method is from an impl
         if (exp.call.class === 'DotExp') {
+            returnType = getExpType(exp.call, varMap);
             const primaryType = getExpType(exp.call.primary, varMap);
             // console.log(util.inspect({"Expected Params":implMethods[primaryType].methods[methodName].inputs}, false, null, true));
             expectedParams = implMethods[primaryType].methods[methodName].inputs;
@@ -231,8 +233,15 @@ function getExpType(exp, varMap, type) {
 
         // Checking if method is a func
         if (exp.call.class === 'VarExp') {
+            let varName = exp.call.varName;
+            // console.log(receivedParams);
+            receivedParams.forEach((param) => {
+                varName += getExpType(param);
+            })
+            let newCaller = { class: 'VarExp', varName};
+            returnType = getExpType(newCaller, varMap);
             // console.log(util.inspect({"Expected Params":functions[methodName].inputs}, false, null, true));
-            expectedParams = functions[methodName].inputs;
+            expectedParams = functions[varName].inputs;
         }
 
         var accum = 0;
@@ -385,7 +394,7 @@ export function typecheck({programItems, stmts}) {
                 method.params.list.forEach((param) => {
                     localVarMap[param.varName] = getParamType(param.type);
                 })
-                const calculatedType = getStatementsReturnType(method.stmts, localVarMap);
+                const calculatedType = getStatementsReturnType(method.stmts, localVarMap, getParamType(method.type));
                 if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
             })
         }
