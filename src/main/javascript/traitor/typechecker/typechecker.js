@@ -71,7 +71,6 @@ function parseItem(item) {
             throw new RedeclarationError("Trait " + name + " has already been implemented for " + forType);
         }
         impls[name].forTypes.add(forType);
-        // console.log(impls[name].forTypes);
         
         // Checking if traits have previously been implemented for the given type
         if (!(implMethods[forType])) {
@@ -103,14 +102,20 @@ function parseItem(item) {
             
             temp.statements = method.stmts
             temp.inputs = {}
-            // console.log("Trait method: ");
-            // console.log(util.inspect(traits[name][method.methodName], false, null, true /* enable colors */))
-            // console.log("Impl method: ");
-            // console.log(util.inspect(method, false, null, true /* enable colors */));
 
             method.params.list.forEach((param) => {
                 temp.inputs[param.varName] = getParamType(param.type);
             })
+            
+            // Checking if the parameters between the abstract and concrete method definitions match
+            for (const [key, value] of Object.entries(temp.inputs)) {
+                var absParamType = traits[name][method.methodName].inputs[key];
+                if (absParamType === 'SelfType') {
+                    absParamType = forType;
+                }
+                if (value !== absParamType)
+                    throw new TypeError("Expected param type " + absParamType + " for method `" + method.methodName + "`; instead received " + value);
+            }
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
@@ -129,10 +134,6 @@ function parseItem(item) {
             functions[name].inputs[param.varName] = getParamType(param.type);
         })
     }
-    // This else statement would be a parser problem 
-    // else {             
-    //    throw new RedeclarationError("Item has invalid class name: " + className);
-    // }
 }
 
 // type is only relevant for SelfExp which is from items only
@@ -151,11 +152,6 @@ function getExpType(exp, varMap, type) {
     } else if (exp.class === 'SelfExp') {
         return type;
     } else if (exp.class === 'IntLitExp') {
-        // This if statement is a tokenizer problem
-        // if (Number.isNaN(exp.value)) {               
-        //     // console.log(util.inspect(exp, false, null, true /* enable colors */));
-        //     throw new Error("IntLitExp found with value not a number:");
-        // }
         return 'IntType';
     } else if (exp.class === 'TrueExp' || exp.class === 'FalseExp') {
         return 'BooleanType';
@@ -189,9 +185,7 @@ function getExpType(exp, varMap, type) {
         var accum = 0;
         for (const [key, value] of Object.entries(expectedParams)) {
             const expectedParamType = value;
-            const receivedParamType = getExpType(receivedParams[accum]);
-            // console.log({"Expected Param Type": expectedParamType});
-            // console.log({"Received Param Type": receivedParamType});
+            const receivedParamType = getExpType(receivedParams[accum], varMap);
             if (expectedParamType !== receivedParamType) {
                 throw new TypeError("Expected param type " + expectedParamType + " for method `" + methodName + "`; instead received " + receivedParamType);
             }

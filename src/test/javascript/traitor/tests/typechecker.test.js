@@ -146,6 +146,25 @@ describe('Typechecking Program Items Test', () => {
             expect(err).toStrictEqual(new TypeError("Attempted assigning return type of VoidType to method `cube` which needs return type IntType"));
         }
     })
+    it('Attempting impl of method with wrong param type', () => {
+        const data = `
+        trait Addable {
+            method add(other: Self): Self;
+        }
+        impl Addable for Int {
+            method add(other: Boolean): Int {
+                return self + other;
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Expected param type IntType for method `add`; instead received BooleanType"));
+        }
+    })
 });
 
 describe('Typechecking statements test', () => {
