@@ -111,6 +111,10 @@ function parseItem(item) {
             method.params.list.forEach((param) => {
                 temp.inputs[param.varName] = getParamType(param.type);
             })
+
+            //check if statement types match the return type
+            //method.type == method.stmts.
+            console.log(JSON.stringify(method));
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
@@ -133,6 +137,46 @@ function parseItem(item) {
     // else {             
     //    throw new RedeclarationError("Item has invalid class name: " + className);
     // }
+}
+
+function getStatementsReturnType(stmts, varMap)
+{
+    var returnType = 'VoidType';
+    stmts.forEach((stmt) => {
+        returnType = getStatementReturnType(stmt, varMap);
+        if(returnType != 'VoidType') return returnType;
+    })
+    return returnType;
+}
+
+//assumes that statement has been typechecked for consistency already
+function getStatementReturnType(statement, varMap) {
+    const className = statement.class;
+    if (className == 'LetStmt') {
+        return 'VoidType'
+    } else if (className === 'VarStmt') {
+        return 'VoidType'
+    } else if (className === 'IfStmt') {
+        return getStatementType(statement.trueBranch, varMap);
+    } else if (className === 'IfElseStmt') {
+        return getStatementType(statement.falseBranch, varMap); //assuming it is already checked for consistency
+    } else if (className === 'WhileStmt') {
+        return getStatementType(statement.body, varMap);
+    } else if (className === 'BreakStmt') {
+        return 'VoidType';
+    } else if (className === 'PrintlnStmt') {
+        return 'VoidType'
+    } else if (className === 'BlockStmt') {
+        getStatementsReturnType(statement.stmtList, varMap);
+    } else if (className === 'ReturnExpStmt') {
+        return getExpType(statement.exp, varMap);
+    } else if (className === 'ReturnStmt') {
+        return 'VoidType';
+    } else if (className === 'ExpStmt') {
+        return 'VoidType';
+    } else {
+        throw new TypeError("Invalid statement: " + statement);
+    }
 }
 
 // type is only relevant for SelfExp which is from items only
