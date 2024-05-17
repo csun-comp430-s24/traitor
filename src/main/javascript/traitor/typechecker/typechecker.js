@@ -6,6 +6,7 @@ import {
 
 } from "./errors.js";
 import * as util from 'util';
+import { stat } from "fs";
 
 var defSet = new Set();
 var structs = {}; // basically a class
@@ -116,10 +117,6 @@ function parseItem(item) {
                 if (value !== absParamType)
                     throw new TypeError("Expected param type " + absParamType + " for method `" + method.methodName + "`; instead received " + value);
             }
-
-            //check if statement types match the return type
-            //method.type == method.stmts.
-            console.log(util.inspect(method, false, null, true));
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
@@ -140,9 +137,10 @@ function parseItem(item) {
     }
 }
 
-function getStatementsReturnType(stmts, varMap)
+function getStatementsReturnType(stmts)
 {
     var returnType = 'VoidType';
+    var varMap = {};
     stmts.forEach((stmt) => {
         returnType = getStatementReturnType(stmt, varMap);
         if(returnType != 'VoidType') return returnType;
@@ -151,9 +149,10 @@ function getStatementsReturnType(stmts, varMap)
 }
 
 //assumes that statement has been typechecked for consistency already
-function getStatementReturnType(statement, varMap) {
+function getStatementReturnType(statement) {
     const className = statement.class;
     if (className == 'LetStmt') {
+        varMap[statement.param] = getExpType(statement.exp, varMap);
         return 'VoidType'
     } else if (className === 'VarStmt') {
         return 'VoidType'
@@ -365,6 +364,23 @@ export function typecheck({programItems, stmts}) {
     functions = {};
     programItems.forEach((item) => {
         parseItem(item);
+    })
+
+    programItems.forEach((item) => {
+        if(item.class == 'ImplDef')
+        {
+            item.concMethods.forEach((method) => {
+                expectedType = method.type;
+                calculatedType = getStatementsReturnType(method.stmts);
+                if(expectedType != calculatedType) throw TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
+            })
+        }
+        else if(item.class == 'FuncDef')
+        {
+            expectedType = item.type;
+            calculatedType = getStatementsReturnType(item.stmts);
+            if(expectedType != calculatedType) throw TypeError("Return Type mismatch in " + item.varName + " method. Expected " + expectedType + ", returning " + calculatedType);
+        }
     })
 
     // Adding function names to varMap with return type
