@@ -252,8 +252,10 @@ describe('Typechecking statements test', () => {
                     struct IntWrapper {
                         value: Int
                     }
-                    let a: IntWrapper = new IntWrapper { value: 7 };
-                    let b: Boolean = a.value;`;
+                    func sample(): Void {
+                        let a: IntWrapper = new IntWrapper { value: 7 };
+                        let b: Boolean = a.value;
+                    }`;
         try {
             const tokens = tokenize(data);
             const ast = parse(tokens);
@@ -453,6 +455,7 @@ describe('Successful typecheck of sample program', () => {
                 while (1) {
                     break;
                 }
+                if (false) return;
                 return self + other;
             }
         }

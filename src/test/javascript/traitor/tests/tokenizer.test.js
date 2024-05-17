@@ -1,6 +1,6 @@
 import tokenize from "../../../../main/javascript/traitor/tokenizer/tokenizer.js";
 import Token from "../../../../main/javascript/traitor/tokenizer/token.js";
-import TokenizerException from "../../../../main/javascript/traitor/tokenizer/tokenizeException.js";
+import TokenizerError from "../../../../main/javascript/traitor/tokenizer/tokenizeError.js";
 
 describe('Tokenizer Test', () => {
     it('Parsing dummy string', () => {
@@ -43,7 +43,7 @@ describe('Tokenizer Test', () => {
             const result = tokenize(data);
             console.log(result);
         } catch(err) {
-            expect(err).toStrictEqual(new TokenizerException('Unacceptable token: !'));
+            expect(err).toStrictEqual(new TokenizerError('Unacceptable token: !'));
         }
     })
     it('Parsing keywords, integers, and evaluators', () => {

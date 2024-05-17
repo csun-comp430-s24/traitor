@@ -1,12 +1,9 @@
-import { builtinModules } from "module";
 import {
     TypeError,
     RedeclarationError,
     UndeclaredError,
 
 } from "./errors.js";
-import * as util from 'util';
-import { stat } from "fs";
 
 var defSet = new Set();
 var structs = {}; // basically a class

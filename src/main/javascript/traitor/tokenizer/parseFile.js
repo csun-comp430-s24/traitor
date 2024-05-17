@@ -1,6 +1,6 @@
 import { getStateType, getTokenType } from "./charHelpers.js";
 import Token from "./token.js";
-import TokenizerException from "./tokenizeException.js";
+import TokenizerError from "./tokenizeError.js";
 
 const getToken = (table, file, index, state=1) => {
     // console.log("idx:", index, " fLen:", file.length);
@@ -37,7 +37,7 @@ const parseFile = (table, file, index=0) => {
 
         const [tokenStr, iters] = getToken(table, file, index);
         // console.log("tokenStr:", tokenStr);
-        if (getTokenType(tokenStr) === null) throw new TokenizerException('Unacceptable token: ' + tokenStr); // unacceptable input
+        if (getTokenType(tokenStr) === null) throw new TokenizerError('Unacceptable token: ' + tokenStr); // unacceptable input
         index += iters; // != 0 ? iters : 1;
         const token = new Token(getTokenType(tokenStr), tokenStr);
         tokenList.push(token);
