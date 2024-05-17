@@ -1,51 +1,42 @@
-trait Addable {
-    method add(other: Self): Self;
+trait Geometry {
+	method area(): Int;
+	method perimeter(): Int;
 }
 
-trait Printable {
-    method print(): Void;
+struct Square {
+	side: Int
 }
 
-struct IntWrapper {
-    value: Int
+struct Rectangle {
+	width: Int,
+	length: Int
 }
 
-impl Addable for Int {
-    method add(other: Int): Int {
-        return self + other;
-    }
+impl Geometry for Square {
+	method area(): Int {
+		let s: Int = self.side;
+		return s * s;
+	}
+	method perimeter(): Int {
+		let s: Int = self.side;
+		return 4 * s;
+	}
 }
 
-impl Addable for IntWrapper {
-    method add(other: IntWrapper): IntWrapper {
-        return new IntWrapper { value: self.value + other.value };
-    }
+impl Geometry for Rectangle {
+	method area(): Int {
+		let w: Int = self.width;
+		let h: Int = self.length;
+		return w * h;
+	}
+	method perimeter(): Int {
+		let w: Int = self.width;
+		let h: Int = self.length;
+		return 2 * (w + h);
+	}
 }
 
-impl Printable for Int {
-    method print(): Void {
-        println(self);
-    }
-}
-
-impl Printable for IntWrapper {
-    method print(): Void {
-        println(self);
-    }
-}
-
-func mult (x : Int, y : Int) : Int { 
-    return x * y; 
-}
-
-let a1: Int = 5;
-let a2: IntWrapper = new IntWrapper { value: 7 };
-let a3: Int = a1.add(2);
-let a4: IntWrapper = a2.add(new IntWrapper { value: 3 });
-let a5: Boolean = true;
-a3.print();
-1 + 2;
-return 3;
-if ( a5 == true ) a5 = false;
-a1 < a3;
-a2 != a4;
+let s1: Square = new Square { side: 4 };
+println(s1.area());
+let r1: Rectangle = new Rectangle { width: 3, length: 2 };
+println(r1.perimeter());

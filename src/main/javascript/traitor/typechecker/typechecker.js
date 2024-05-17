@@ -162,7 +162,7 @@ function getStatementReturnType(statement, varMap, type) {
     const className = statement.class;
     // console.log(statement);
     if (className == 'LetStmt') {
-        varMap[statement.param.varName] = getExpType(statement.exp, varMap);
+        varMap[statement.param.varName] = getExpType(statement.exp, varMap, type);
         return 'VoidType'
     } else if (className === 'VarStmt') {
         return 'VoidType'
@@ -225,7 +225,7 @@ function getExpType(exp, varMap, type) {
 
         // Checking if method is from an impl
         if (exp.call.class === 'DotExp') {
-            returnType = getExpType(exp.call, varMap);
+            returnType = getExpType(exp.call, varMap, type);
             const primaryType = getExpType(exp.call.primary, varMap);
             // console.log(util.inspect({"Expected Params":implMethods[primaryType].methods[methodName].inputs}, false, null, true));
             expectedParams = implMethods[primaryType].methods[methodName].inputs;
@@ -260,7 +260,7 @@ function getExpType(exp, varMap, type) {
         const variable = exp.varName;
 
         // Getting type of primary
-        const primaryType = getExpType(exp.primary, varMap);
+        const primaryType = getExpType(exp.primary, varMap, type);
 
         // Checking if type contains methods
         if (implMethods[primaryType]) {
@@ -394,7 +394,7 @@ export function typecheck({programItems, stmts}) {
                 method.params.list.forEach((param) => {
                     localVarMap[param.varName] = getParamType(param.type);
                 })
-                const calculatedType = getStatementsReturnType(method.stmts, localVarMap, getParamType(method.type));
+                const calculatedType = getStatementsReturnType(method.stmts, localVarMap, getParamType(item.type));
                 if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
             })
         }
