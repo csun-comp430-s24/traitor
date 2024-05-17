@@ -38,5 +38,5 @@ impl Geometry for Rectangle {
 
 let s1: Square = new Square { side: 4 };
 println(s1.area());
-let r1: Rectangle = new Rectangle { width: 3, length: 2 };
+let r1: Rectangle = new Rectangle { width: s1.perimeter(), length: s1.area() };
 println(r1.perimeter());
