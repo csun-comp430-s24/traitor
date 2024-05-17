@@ -17,7 +17,7 @@ var functions = {};
 function parseItem(item) {
     const className = item.class;
     if (className === 'StructDef') {
-        const name = item.structName;
+        let name = item.structName;
 
         // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
@@ -33,8 +33,9 @@ function parseItem(item) {
             }
             structs[name][param.varName] = getParamType(param.type);
         })
+        console.log(util.inspect({"structs:": structs}, false, null, true));
     } else if (className === 'TraitDef') {
-        const name = item.traitName;
+        let name = item.traitName;
 
         // Checking if an item with the same name has already been declared
         if (defSet.has(name)) {
@@ -51,8 +52,10 @@ function parseItem(item) {
                 traits[name][method.methodName].inputs[param.varName] = getParamType(param.type);
             })
         })
+        console.log(util.inspect({"traits:": traits}, false, null, true));
     } else if (className === 'ImplDef') {
         const name = item.traitName;
+        console.log(util.inspect({"ImplDef:": item}, false, null, true));
 
         // Checking if trait exists
         if (!traits[name]) {
@@ -119,12 +122,15 @@ function parseItem(item) {
 
             //check if statement types match the return type
             //method.type == method.stmts.
-            console.log(util.inspect(method, false, null, true));
+            // console.log(util.inspect(method, false, null, true));
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
     } else if (className === 'FuncDef') {
-        const name = item.varName;
+        let name = item.varName;
+        item.params.list.forEach((param) => {
+            name += param.type.class;
+        })
         if (defSet.has(name)) {
             throw new RedeclarationError("Item has been declared more than once with name: `" + name + "`");
         }
