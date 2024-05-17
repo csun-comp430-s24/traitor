@@ -258,6 +258,7 @@ function getExpType(exp, varMap, type) {
             expectedParams = functions[varName].inputs;
         }
 
+        /* Initially meant to check if parameters on a function call match the function, this is now handled by function overloading checks
         var accum = 0;
         for (const [key, value] of Object.entries(expectedParams)) {
             const expectedParamType = value;
@@ -266,7 +267,7 @@ function getExpType(exp, varMap, type) {
                 throw new TypeError("Expected param type " + expectedParamType + " for method `" + methodName + "`; instead received " + receivedParamType);
             }
             accum += 1;
-        }
+        }*/
         // console.log(util.inspect({"Call Params":exp.params.list}, false, null, true));
 
         return returnType;

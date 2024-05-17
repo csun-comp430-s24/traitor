@@ -216,6 +216,53 @@ describe('Typechecking Program Items Test', () => {
             expect(err).toStrictEqual(new TypeError("Mismatch of return types in if/else statement; if returns type IntType; else returns type BooleanType"));
         }
     })
+    it('Variable redeclaration in a function', () => {
+        const data = `
+        func foo(): Boolean {
+            let a: Int = 1;
+            let a: Boolean = true;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new RedeclarationError("Variable `a` has already been declared"));
+        }
+    })
+    it('Variable undeclared in a function', () => {
+        const data = `
+        func foo(): Boolean {
+            a = 1;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new UndeclaredError("Variable assigned to before declaration: a"));
+        }
+    })
+    it('Variable assign type mismatch in a function', () => {
+        const data = `
+        func foo(): Boolean {
+            let a: Int = 1;
+            a = true;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Attempted assigning type of BooleanType to variable `a` of type IntType"));
+        }
+    })
 });
 
 describe('Typechecking statements test', () => {
@@ -486,7 +533,7 @@ describe('Typechecking statements test', () => {
     })
 })
 
-describe('Successful typecheck of sample program', () => {
+describe('Successful typecheck of arbitrary program handling most cases', () => {
     it('Successful typecheck', () => {
         const data = `
         trait Addable {
@@ -507,6 +554,7 @@ describe('Successful typecheck of sample program', () => {
                     break;
                 }
                 if (false) return;
+                1 + 1;
                 return self + other;
             }
         }
