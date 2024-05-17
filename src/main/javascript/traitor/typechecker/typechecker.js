@@ -116,6 +116,10 @@ function parseItem(item) {
                 if (value !== absParamType)
                     throw new TypeError("Expected param type " + absParamType + " for method `" + method.methodName + "`; instead received " + value);
             }
+
+            //check if statement types match the return type
+            //method.type == method.stmts.
+            console.log(JSON.stringify(method));
         })
         // console.log("Methods for " + forType + ": ");
         // console.log(implMethods[forType]);
@@ -133,6 +137,46 @@ function parseItem(item) {
         item.params.list.forEach((param) => {
             functions[name].inputs[param.varName] = getParamType(param.type);
         })
+    }
+}
+
+function getStatementsReturnType(stmts, varMap)
+{
+    var returnType = 'VoidType';
+    stmts.forEach((stmt) => {
+        returnType = getStatementReturnType(stmt, varMap);
+        if(returnType != 'VoidType') return returnType;
+    })
+    return returnType;
+}
+
+//assumes that statement has been typechecked for consistency already
+function getStatementReturnType(statement, varMap) {
+    const className = statement.class;
+    if (className == 'LetStmt') {
+        return 'VoidType'
+    } else if (className === 'VarStmt') {
+        return 'VoidType'
+    } else if (className === 'IfStmt') {
+        return getStatementType(statement.trueBranch, varMap);
+    } else if (className === 'IfElseStmt') {
+        return getStatementType(statement.falseBranch, varMap); //assuming it is already checked for consistency
+    } else if (className === 'WhileStmt') {
+        return getStatementType(statement.body, varMap);
+    } else if (className === 'BreakStmt') {
+        return 'VoidType';
+    } else if (className === 'PrintlnStmt') {
+        return 'VoidType'
+    } else if (className === 'BlockStmt') {
+        getStatementsReturnType(statement.stmtList, varMap);
+    } else if (className === 'ReturnExpStmt') {
+        return getExpType(statement.exp, varMap);
+    } else if (className === 'ReturnStmt') {
+        return 'VoidType';
+    } else if (className === 'ExpStmt') {
+        return 'VoidType';
+    } else {
+        throw new TypeError("Invalid statement: " + statement);
     }
 }
 
