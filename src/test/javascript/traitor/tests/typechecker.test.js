@@ -165,6 +165,57 @@ describe('Typechecking Program Items Test', () => {
             expect(err).toStrictEqual(new TypeError("Expected param type IntType for method `add`; instead received BooleanType"));
         }
     })
+    it('Attempting impl of method with wrong return type in statements', () => {
+        const data = `
+        trait Addable {
+            method add(other: Self): Self;
+        }
+        impl Addable for Int {
+            method add(other: Int): Int {
+                return true;
+            }
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Return Type mismatch in `add` method. Expected IntType, returning BooleanType"));
+        }
+    })
+    it('Attempting func def with wrong return type in statements', () => {
+        const data = `
+        func foo(other: Int): Int {
+            return true;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Return Type mismatch in `fooIntType` method. Expected IntType, returning BooleanType"));
+        }
+    })
+    it('Attempting func def with mismatched return types in if/else statement', () => {
+        const data = `
+        func foo(): Boolean {
+            if (true) {
+                return 1;
+            }
+            else return false;
+        }
+        `
+        try {
+            const tokens = tokenize(data);
+            const ast = parse(tokens);
+            console.log(util.inspect(ast, false, null, true /* enable colors */));
+            const vars = typecheck(ast);
+        } catch(err) {
+            expect(err).toStrictEqual(new TypeError("Mismatch of return types in if/else statement; if returns type IntType; else returns type BooleanType"));
+        }
+    })
 });
 
 describe('Typechecking statements test', () => {

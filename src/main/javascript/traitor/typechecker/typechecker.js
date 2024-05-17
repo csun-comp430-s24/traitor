@@ -180,6 +180,9 @@ function getStatementReturnType(statement, varMap, type) {
     } else if (className === 'IfStmt') {
         return getStatementReturnType(statement.trueBranch, varMap);
     } else if (className === 'IfElseStmt') {
+        const trueReturn = getStatementReturnType(statement.trueBranch, varMap);
+        const falseReturn = getStatementReturnType(statement.falseBranch, varMap);
+        if (trueReturn !== falseReturn) throw new TypeError("Mismatch of return types in if/else statement; if returns type " + trueReturn + "; else returns type " + falseReturn);
         return getStatementReturnType(statement.falseBranch, varMap); //assuming it is already checked for consistency
     } else if (className === 'WhileStmt') {
         return getStatementReturnType(statement.body, varMap);
@@ -188,7 +191,7 @@ function getStatementReturnType(statement, varMap, type) {
     } else if (className === 'PrintlnStmt') {
         return 'VoidType'
     } else if (className === 'BlockStmt') {
-        getStatementsReturnType(statement.stmtList, varMap);
+        return getStatementsReturnType(statement.stmtList, varMap);
     } else if (className === 'ReturnExpStmt') {
         return getExpType(statement.exp, varMap, type);
     } else if (className === 'ReturnStmt') {
@@ -406,18 +409,20 @@ export function typecheck({programItems, stmts}) {
                     localVarMap[param.varName] = getParamType(param.type);
                 })
                 const calculatedType = getStatementsReturnType(method.stmts, localVarMap, getParamType(item.type));
-                if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + method.name + " method. Expected " + expectedType + ", returning " + calculatedType);
+                if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in `" + method.methodName + "` method. Expected " + expectedType + ", returning " + calculatedType);
             })
         }
         else if(item.class == 'FuncDef')
         {
             const expectedType = getParamType(item.type);
             const localVarMap = {};
+            let currentVarName = item.varName;
             item.params.list.forEach((param) => {
                 localVarMap[param.varName] = getParamType(param.type);
+                currentVarName += getParamType(param.type);
             })
             const calculatedType = getStatementsReturnType(item.stmts, localVarMap);
-            if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in " + item.varName + " method. Expected " + expectedType + ", returning " + calculatedType);
+            if(expectedType != calculatedType) throw new TypeError("Return Type mismatch in `" + currentVarName + "` method. Expected " + expectedType + ", returning " + calculatedType);
         }
     })
 
